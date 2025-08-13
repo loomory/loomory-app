@@ -1,3 +1,6 @@
+# Ignore settings.json since as of now, it is local only
+.vscode
+
 # Miscellaneous
 *.class
 *.lock
