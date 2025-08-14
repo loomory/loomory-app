@@ -10,6 +10,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
@@ -20,18 +22,21 @@ import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
-import 'package:immich_mobile/routing/router.dart';
+
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
+import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 import 'constants/locales.dart';
 import 'theme/theme_data.dart';
+import 'routing/router.dart';
 
 void main() async {
   ImmichWidgetsBinding();
@@ -39,17 +44,17 @@ void main() async {
   final logDb = DriftLogger();
   await Bootstrap.initDomain(db, logDb);
   await initApp();
+  // TODO, remove this once Immich is finished with Drift migration
+  await Store.put(StoreKey.betaTimeline, true);
+
   // Warm-up isolate pool for worker manager
-  // await workerManager.init(dynamicSpawning: true);
-  // await migrateDatabaseIfNeeded(db);
-  // HttpSSLOptions.apply();
+  await workerManager.init(dynamicSpawning: true);
+  await migrateDatabaseIfNeeded(db);
+  //HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
-      ],
+      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
       child: const MainWidget(),
     ),
   );
@@ -72,14 +77,14 @@ Future<void> initApp() async {
 
   final log = Logger("ErrorLogger");
 
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    log.severe(
-      'FlutterError - Catch all',
-      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
-      details.stack,
-    );
-  };
+  // FlutterError.onError = (details) {
+  //   FlutterError.presentError(details);
+  //   log.severe(
+  //     'FlutterError - Catch all',
+  //     "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
+  //     details.stack,
+  //   );
+  // };
 
   PlatformDispatcher.instance.onError = (error, stack) {
     log.severe('PlatformDispatcher - Catch all', error, stack);
@@ -94,10 +99,7 @@ Future<void> initApp() async {
     globalConfig: (Config.holdingQueue, (6, 6, 3)),
   );
 
-  await FileDownloader().trackTasksInGroup(
-    kDownloadGroupLivePhoto,
-    markDownloadedComplete: false,
-  );
+  await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
   await FileDownloader().trackTasks();
 
@@ -115,8 +117,7 @@ class LoomoryApp extends ConsumerStatefulWidget {
   LoomoryAppState createState() => LoomoryAppState();
 }
 
-class LoomoryAppState extends ConsumerState<LoomoryApp>
-    with WidgetsBindingObserver {
+class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -150,16 +151,12 @@ class LoomoryAppState extends ConsumerState<LoomoryApp>
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-    );
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
     if (Platform.isAndroid) {
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle = context.isDarkTheme
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light;
+        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
@@ -169,40 +166,22 @@ class LoomoryAppState extends ConsumerState<LoomoryApp>
   void _configureFileDownloaderNotifications() {
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupImage,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupVideo,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kManualUploadGroup,
-      running: TaskNotification(
-        'uploading_media'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
-      complete: TaskNotification(
-        'upload_finished'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
+      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
       progressBar: true,
     );
   }
@@ -211,23 +190,16 @@ class LoomoryAppState extends ConsumerState<LoomoryApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
-    final isColdStart =
-        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+    final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
 
       return proposedRoute;
     }
@@ -264,9 +236,7 @@ class LoomoryAppState extends ConsumerState<LoomoryApp>
 
   @override
   Widget build(BuildContext context) {
-    final router = ref.watch(
-      appRouterProvider,
-    ); //TODO must review all routing for our app
+    final router = ref.watch(appRouterProvider); //TODO must review all routing for our app
     final immichTheme = ref.watch(immichThemeProvider);
 
     return ProviderScope(
@@ -278,20 +248,11 @@ class LoomoryAppState extends ConsumerState<LoomoryApp>
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         themeMode: ref.watch(immichThemeModeProvider),
-        darkTheme: getThemeData(
-          colorScheme: immichTheme.dark,
-          locale: context.locale,
-        ),
-        theme: getThemeData(
-          colorScheme: immichTheme.light,
-          locale: context.locale,
-        ),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
+        theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [
-            AppNavigationObserver(ref: ref),
-            HeroController(),
-          ],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

@@ -18,17 +18,19 @@ dependencies:
   cupertino_icons: ^1.0.8
   device_info_plus: ^11.3.3
   flutter_displaymode: ^0.6.0
+  flutter_hooks: ^0.21.2
   easy_localization: ^3.0.7+1
   intl: ^0.20.0
   hooks_riverpod: ^2.6.1
   logging: ^1.3.0
+  package_info_plus: ^8.3.0
   # Requires manual add in Podfile, see instructions on pub.dev
   # Otherwise we get Unable to find a specification for `share_handler_ios_models` depended upon by `share_handler_ios`
   # because of transitive dependency in packages/immich with no support in our Podfile for loomery
-  share_handler: ^0.0.22
+  share_handler: ^0.0.22  
   riverpod_annotation: ^2.6.1
- 
   timezone: ^0.9.4
+  worker_manager: ^7.2.3
 
 # Check immich_mobile versions from time to time for dev_dependency versions
 dev_dependencies:
@@ -49,6 +51,7 @@ dependency_overrides:
 flutter:
   uses-material-design: true
   assets:
+    - assets/
     - assets/i18n/
     - assets/images/
 
