@@ -28,6 +28,7 @@ import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -40,17 +41,17 @@ import 'routing/router.dart';
 
 void main() async {
   ImmichWidgetsBinding();
+
   final db = await Bootstrap.initIsar();
   final logDb = DriftLogger();
+
   await Bootstrap.initDomain(db, logDb);
   await initApp();
-  // TODO, remove this once Immich is finished with Drift migration
-  await Store.put(StoreKey.betaTimeline, true);
 
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
   await migrateDatabaseIfNeeded(db);
-  //HttpSSLOptions.apply();
+  HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
@@ -77,14 +78,14 @@ Future<void> initApp() async {
 
   final log = Logger("ErrorLogger");
 
-  // FlutterError.onError = (details) {
-  //   FlutterError.presentError(details);
-  //   log.severe(
-  //     'FlutterError - Catch all',
-  //     "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
-  //     details.stack,
-  //   );
-  // };
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    log.severe(
+      'FlutterError - Catch all',
+      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
+      details.stack,
+    );
+  };
 
   PlatformDispatcher.instance.onError = (error, stack) {
     log.severe('PlatformDispatcher - Catch all', error, stack);

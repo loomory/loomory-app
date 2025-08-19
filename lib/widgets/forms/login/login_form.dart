@@ -177,7 +177,6 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            await runNewSync(ref);
             context.replaceRoute(const TabShellRoute());
             return;
           }
