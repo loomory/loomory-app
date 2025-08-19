@@ -30,5 +30,18 @@ git add packages/immich
 git commit -m "chore: update immich to $version"
 git push origin main
 
+
+# Update root pubspec.yaml version to match Immich Mobile
+immich_version_line=$(grep '^version:' packages/immich/mobile/pubspec.yaml)
+if [ -n "$immich_version_line" ]; then
+  sed -i.bak "/^version:/c\\$immich_version_line" pubspec.yaml
+  rm pubspec.yaml.bak
+  echo "Root pubspec.yaml version updated to: $immich_version_line"
+else
+  echo "Warning: Could not find version line in packages/immich/mobile/pubspec.yaml"
+fi
+
 echo "Immich submodule updated to $version."
-echo "After pulling, other users should run: git submodule update --init packages/immich"
+echo "After pulling, other users must run: git submodule update --init packages/immich"
+echo "pubspec.yaml updated to $version. Do remember to review version breaking changes in copied files."
+
