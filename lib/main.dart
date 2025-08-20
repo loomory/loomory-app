@@ -50,6 +50,7 @@ void main() async {
 
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
+  //await Store.put(StoreKey.betaTimeline, true);
   await migrateDatabaseIfNeeded(db);
   HttpSSLOptions.apply();
 

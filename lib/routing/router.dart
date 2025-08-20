@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -17,6 +18,11 @@ import '../pages/common/tab_shell.page.dart';
 import '../pages/login/login.page.dart';
 import '../pages/login/change_password.page.dart';
 import '../pages/timeline/main_timeline.page.dart';
+
+// This is old timeline and must be removed when beta timeline can be selected from the start
+import '../pages/legacy/tab_controller.page.dart';
+import '../pages/legacy/photos.page.dart';
+import '../pages/legacy/change_experience.page.dart';
 
 part 'router.gr.dart';
 
@@ -60,6 +66,15 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
 
     //AutoRoute(page: ChangePasswordRoute.page),
+    CustomRoute(
+      page: TabControllerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      children: [
+        AutoRoute(page: PhotosRoute.page, guards: [_authGuard, _duplicateGuard]),
+      ],
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+    ),
+
     CustomRoute(
       page: TabShellRoute.page,
       guards: [_authGuard, _duplicateGuard],
@@ -214,7 +229,7 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftPlaceDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftUserSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
-    // AutoRoute(page: ChangeExperienceRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: ChangeExperienceRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftPartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftUploadDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: BetaSyncSettingsRoute.page, guards: [_authGuard, _duplicateGuard]),

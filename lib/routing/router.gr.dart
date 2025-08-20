@@ -11,6 +11,49 @@
 part of 'router.dart';
 
 /// generated route for
+/// [ChangeExperiencePage]
+class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
+  ChangeExperienceRoute({
+    Key? key,
+    required bool switchingToBeta,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ChangeExperienceRoute.name,
+         args: ChangeExperienceRouteArgs(
+           key: key,
+           switchingToBeta: switchingToBeta,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'ChangeExperienceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ChangeExperienceRouteArgs>();
+      return ChangeExperiencePage(
+        key: args.key,
+        switchingToBeta: args.switchingToBeta,
+      );
+    },
+  );
+}
+
+class ChangeExperienceRouteArgs {
+  const ChangeExperienceRouteArgs({this.key, required this.switchingToBeta});
+
+  final Key? key;
+
+  final bool switchingToBeta;
+
+  @override
+  String toString() {
+    return 'ChangeExperienceRouteArgs{key: $key, switchingToBeta: $switchingToBeta}';
+  }
+}
+
+/// generated route for
 /// [ChangePasswordPage]
 class ChangePasswordRoute extends PageRouteInfo<void> {
   const ChangePasswordRoute({List<PageRouteInfo>? children})
@@ -59,6 +102,22 @@ class MainTimelineRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PhotosPage]
+class PhotosRoute extends PageRouteInfo<void> {
+  const PhotosRoute({List<PageRouteInfo>? children})
+    : super(PhotosRoute.name, initialChildren: children);
+
+  static const String name = 'PhotosRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PhotosPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<void> {
   const SplashScreenRoute({List<PageRouteInfo>? children})
@@ -70,6 +129,22 @@ class SplashScreenRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SplashScreenPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TabControllerPage]
+class TabControllerRoute extends PageRouteInfo<void> {
+  const TabControllerRoute({List<PageRouteInfo>? children})
+    : super(TabControllerRoute.name, initialChildren: children);
+
+  static const String name = 'TabControllerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TabControllerPage();
     },
   );
 }

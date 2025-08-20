@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import '../../routing/router.dart';
@@ -68,7 +70,17 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
 
     if (context.router.current.name == SplashScreenRoute.name) {
-      context.replaceRoute(const TabShellRoute()); //TODO add when login works
+      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+    }
+
+    if (Store.isBetaTimelineEnabled) {
+      return;
+    }
+
+    final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+    if (hasPermission) {
+      // Resume backup (if enable) then navigate
+      ref.watch(backupProvider.notifier).resumeBackup();
     }
   }
 
@@ -76,7 +88,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Image(image: AssetImage('assets/images/loomory-logo.png'), width: 80, filterQuality: FilterQuality.high),
+        child: Image(image: AssetImage('assets/immich-logo.png'), width: 80, filterQuality: FilterQuality.high),
       ),
     );
   }
