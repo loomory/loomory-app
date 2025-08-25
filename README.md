@@ -19,3 +19,7 @@ git submodule update --init --recursive
 - Share extension config issue.
   ShareExtension requires additions for Podfile (and plist)
   TODO: ShareExtension App groups are NOT configured yet in Loomory.
+
+- Immich includes a bunch of header files in AppDelegate.swift. If an obj-c value is not found, make sure Immich
+  has not added more included in AppDelegate.h. I think normally this is done in the briding header but let's copy
+  what they do.
