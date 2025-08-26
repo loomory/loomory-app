@@ -33,22 +33,22 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   void initState() {
     super.initState();
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   ref.read(websocketProvider.notifier).connect();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(websocketProvider.notifier).connect();
 
-    //   final isEnableBackup = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+      final isEnableBackup = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
-    //   await runNewSync(ref, full: true).then((_) async {
-    //     if (isEnableBackup) {
-    //       final currentUser = ref.read(currentUserProvider);
-    //       if (currentUser == null) {
-    //         return;
-    //       }
+      await runNewSync(ref, full: true).then((_) async {
+        if (isEnableBackup) {
+          final currentUser = ref.read(currentUserProvider);
+          if (currentUser == null) {
+            return;
+          }
 
-    //       await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-    //     }
-    //   });
-    // });
+          await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+        }
+      });
+    });
   }
 
   @override
