@@ -18,6 +18,8 @@ import '../pages/common/tab_shell.page.dart';
 import '../pages/login/login.page.dart';
 import '../pages/login/change_password.page.dart';
 import '../pages/timeline/main_timeline.page.dart';
+import '../pages/add_photos/add_photos.page.dart';
+import '../pages/add_photos/placeholder.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start
 import '../pages/legacy/tab_controller.page.dart';
@@ -80,12 +82,17 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
       children: [
         AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-        // AutoRoute(page: DriftSearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
+        // Must match in tab_shell routes when changed
+        AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(page: PlaceholderRoute.page, guards: [_authGuard, _duplicateGuard]),
+        //AutoRoute(page: DriftSearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
         // AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
         // AutoRoute(page: DriftAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
+
+    AutoRoute(page: AddPhotosRoute.page, guards: [_authGuard, _duplicateGuard]),
 
     // CustomRoute(
     //   page: GalleryViewerRoute.page,

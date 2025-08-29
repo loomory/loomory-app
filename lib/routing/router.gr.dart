@@ -11,6 +11,22 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AddPhotosPage]
+class AddPhotosRoute extends PageRouteInfo<void> {
+  const AddPhotosRoute({List<PageRouteInfo>? children})
+    : super(AddPhotosRoute.name, initialChildren: children);
+
+  static const String name = 'AddPhotosRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AddPhotosPage();
+    },
+  );
+}
+
+/// generated route for
 /// [ChangeExperiencePage]
 class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
   ChangeExperienceRoute({
@@ -113,6 +129,22 @@ class PhotosRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const PhotosPage();
+    },
+  );
+}
+
+/// generated route for
+/// [PlaceholderPage]
+class PlaceholderRoute extends PageRouteInfo<void> {
+  const PlaceholderRoute({List<PageRouteInfo>? children})
+    : super(PlaceholderRoute.name, initialChildren: children);
+
+  static const String name = 'PlaceholderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PlaceholderPage();
     },
   );
 }

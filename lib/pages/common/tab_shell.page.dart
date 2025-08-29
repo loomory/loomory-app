@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -67,6 +68,11 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
       ),
       NavigationDestination(
+        label: 'add'.tr(),
+        icon: const Icon(Icons.add),
+        selectedIcon: Icon(Icons.add, color: context.primaryColor),
+      ),
+      NavigationDestination(
         label: 'albums'.tr(),
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
@@ -92,7 +98,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 
     return AutoTabsRouter(
       //routes: [const MainTimelineRoute(), DriftSearchRoute(), const DriftAlbumsRoute(), const DriftLibraryRoute()],
-      routes: [const MainTimelineRoute()],
+      routes: [const MainTimelineRoute(), const MainTimelineRoute(), const PlaceholderRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
@@ -119,7 +125,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   }
 }
 
-void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
+void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) async {
   // On Photos page menu tapped
   if (router.activeIndex == 0 && index == 0) {
     EventStream.shared.emit(const ScrollToTopEvent());
@@ -130,8 +136,32 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     ref.read(searchInputFocusProvider).requestFocus();
   }
 
-  // Album page
+  // Hack to switch between all photos on device and photos in Immich
   if (index == 2) {
+    final albums = await ref.read(localAlbumServiceProvider).getAll();
+    for (var album in albums) {
+      album = album.copyWith(backupSelection: BackupSelection.selected);
+      await ref.read(localAlbumServiceProvider).update(album);
+    }
+    await ref.context.pushRoute(const AddPhotosRoute());
+    for (var album in albums) {
+      album = album.copyWith(backupSelection: BackupSelection.none);
+      await ref.read(localAlbumServiceProvider).update(album);
+    }
+    return;
+  }
+  // else {
+  //   Future.delayed(const Duration(milliseconds: 1), () async {
+  //     final albums = await ref.read(localAlbumServiceProvider).getAll();
+  //     for (var album in albums) {
+  //       album = album.copyWith(backupSelection: BackupSelection.none);
+  //       await ref.read(localAlbumServiceProvider).update(album);
+  //     }
+  //   });
+  // }
+
+  // Album page
+  if (index == 3) {
     ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
