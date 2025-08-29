@@ -34,7 +34,10 @@ git push origin main
 # Update root pubspec.yaml version to match Immich Mobile
 immich_version_line=$(grep '^version:' packages/immich/mobile/pubspec.yaml)
 if [ -n "$immich_version_line" ]; then
-  sed -i.bak "/^version:/c\\$immich_version_line" pubspec.yaml
+  sed -i.bak "/^version:/{
+c\\
+$immich_version_line
+}" pubspec.yaml
   rm pubspec.yaml.bak
   echo "Root pubspec.yaml version updated to: $immich_version_line"
 else

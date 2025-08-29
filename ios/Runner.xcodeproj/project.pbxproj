@@ -14,6 +14,9 @@
 		4AA3E25D2E4BA26E00061470 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4AA3E2532E4BA26E00061470 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4AB5AD072E58BFFE00B82C6F /* Messages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AD042E58BFFE00B82C6F /* Messages.g.swift */; };
 		4AB5AD082E58BFFE00B82C6F /* MessagesImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AD052E58BFFE00B82C6F /* MessagesImpl.swift */; };
+		4AB5AEEF2E61EF1A00B82C6F /* Thumbhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AEEB2E61EF1A00B82C6F /* Thumbhash.swift */; };
+		4AB5AEF02E61EF1A00B82C6F /* Thumbnails.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AEEC2E61EF1A00B82C6F /* Thumbnails.g.swift */; };
+		4AB5AEF12E61EF1A00B82C6F /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AEED2E61EF1A00B82C6F /* ThumbnailsImpl.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -77,6 +80,9 @@
 		4AA3E2642E4BA41C00061470 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		4AB5AD042E58BFFE00B82C6F /* Messages.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.g.swift; sourceTree = "<group>"; };
 		4AB5AD052E58BFFE00B82C6F /* MessagesImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesImpl.swift; sourceTree = "<group>"; };
+		4AB5AEEB2E61EF1A00B82C6F /* Thumbhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbhash.swift; sourceTree = "<group>"; };
+		4AB5AEEC2E61EF1A00B82C6F /* Thumbnails.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnails.g.swift; sourceTree = "<group>"; };
+		4AB5AEED2E61EF1A00B82C6F /* ThumbnailsImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailsImpl.swift; sourceTree = "<group>"; };
 		62A257F9F867E45C4099ACEC /* Pods-ShareExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShareExtension.release.xcconfig"; path = "Target Support Files/Pods-ShareExtension/Pods-ShareExtension.release.xcconfig"; sourceTree = "<group>"; };
 		64F171C4D3BC26FA54A00C0C /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		68EFEF3258B474FC1FF5FEBA /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -157,6 +163,17 @@
 			path = ../packages/immich/mobile/ios/Runner/Sync;
 			sourceTree = SOURCE_ROOT;
 		};
+		4AB5AEEE2E61EF1A00B82C6F /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				4AB5AEEB2E61EF1A00B82C6F /* Thumbhash.swift */,
+				4AB5AEEC2E61EF1A00B82C6F /* Thumbnails.g.swift */,
+				4AB5AEED2E61EF1A00B82C6F /* ThumbnailsImpl.swift */,
+			);
+			name = Images;
+			path = ../packages/immich/mobile/ios/Runner/Images;
+			sourceTree = SOURCE_ROOT;
+		};
 		83A2FD0F97A474BA4C3B1062 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,6 +227,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				4AB5AEEE2E61EF1A00B82C6F /* Images */,
 				4AB5AD062E58BFFE00B82C6F /* Sync */,
 				4AA3E2642E4BA41C00061470 /* Runner.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -529,6 +547,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				4AB5AEEF2E61EF1A00B82C6F /* Thumbhash.swift in Sources */,
+				4AB5AEF02E61EF1A00B82C6F /* Thumbnails.g.swift in Sources */,
+				4AB5AEF12E61EF1A00B82C6F /* ThumbnailsImpl.swift in Sources */,
 				4AB5AD072E58BFFE00B82C6F /* Messages.g.swift in Sources */,
 				4AB5AD082E58BFFE00B82C6F /* MessagesImpl.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

@@ -41,22 +41,21 @@ import 'routing/router.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-
-  final db = await Bootstrap.initIsar();
-  final logDb = DriftLogger();
-
-  await Bootstrap.initDomain(db, logDb);
+  final (isar, drift, logDb) = await Bootstrap.initDB();
+  await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
-
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  //await Store.put(StoreKey.betaTimeline, true);
-  await migrateDatabaseIfNeeded(db);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
       child: const MainWidget(),
     ),
   );

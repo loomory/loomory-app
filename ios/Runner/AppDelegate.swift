@@ -13,40 +13,47 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-      // Required for flutter_local_notification
-      if #available(iOS 10.0, *) {
-        UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
-      }
-      
+    // Required for flutter_local_notification
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    }
+
     GeneratedPluginRegistrant.register(with: self)
-      //BackgroundServicePlugin.registerBackgroundProcessing()
+    let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
+    AppDelegate.registerPlugins(binaryMessenger: controller.binaryMessenger)
+    /*BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
 
-      //BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
-      
-      let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-      NativeSyncApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: NativeSyncApiImpl())
+    BackgroundServicePlugin.registerBackgroundProcessing()
+    BackgroundWorkerApiImpl.registerBackgroundProcessing()
 
-      /*BackgroundServicePlugin.setPluginRegistrantCallback { registry in
-        if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
-          PathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-foundation")!)
-        }
+    BackgroundServicePlugin.setPluginRegistrantCallback { registry in
+      if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
+        PathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-foundation")!)
+      }
 
-        if !registry.hasPlugin("org.cocoapods.photo-manager") {
-          PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
-        }
+      if !registry.hasPlugin("org.cocoapods.photo-manager") {
+        PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
+      }
 
-        if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
-          SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
-        }
+      if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
+        SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
+      }
 
-        if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
-          PermissionHandlerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.permission-handler-apple")!)
-        }
+      if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
+        PermissionHandlerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.permission-handler-apple")!)
+      }
 
-        if !registry.hasPlugin("org.cocoapods.network-info-plus") {
-          FPPNetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.network-info-plus")!)
-        }
-      }*/
+      if !registry.hasPlugin("org.cocoapods.network-info-plus") {
+        FPPNetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.network-info-plus")!)
+      }
+    }*/
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+  
+  public static func registerPlugins(binaryMessenger: FlutterBinaryMessenger) {
+    NativeSyncApiSetup.setUp(binaryMessenger: binaryMessenger, api: NativeSyncApiImpl())
+    ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailApiImpl())
+    //BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundWorkerApiImpl())
   }
 }
