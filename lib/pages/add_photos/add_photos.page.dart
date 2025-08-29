@@ -5,6 +5,7 @@ import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dar
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:loomory/widgets/common/dummy_app_bar.dart';
 
 @RoutePage()
 class AddPhotosPage extends ConsumerWidget {
@@ -23,7 +24,9 @@ class AddPhotosPage extends ConsumerWidget {
               ),
               child: Text("back"),
             ),
-            Expanded(child: Timeline(key: const Key("add-photos"))),
+            Expanded(
+              child: Timeline(key: const Key("add-photos"), appBar: DummySliverAppBar()),
+            ),
           ],
         ),
       ),
