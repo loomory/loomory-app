@@ -29,6 +29,7 @@ dependencies:
   path_provider_foundation: ^2.4.1
   package_info_plus: ^8.3.0
   permission_handler: ^11.4.0
+  platform: ^3.1.6
   # Requires manual add in Podfile, see instructions on pub.dev
   # Otherwise we get Unable to find a specification for `share_handler_ios_models` depended upon by `share_handler_ios`
   # because of transitive dependency in packages/immich with no support in our Podfile for loomery
