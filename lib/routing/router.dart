@@ -11,17 +11,15 @@ import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 
 // All pages that can have a route must be in /pages and then imported here
 import '../pages/common/splash_screen.page.dart';
 import '../pages/common/tab_shell.page.dart';
 import '../pages/login/login.page.dart';
 import '../pages/login/change_password.page.dart';
-import '../pages/timeline/main_timeline.page.dart';
+import '../pages/main_timeline/main_timeline.page.dart';
 import '../pages/add_photos/add_photos.page.dart';
 import '../pages/add_photos/placeholder.page.dart';
-import '../widgets/asset_viewer/asset_viewer.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start
 import '../pages/legacy/tab_controller.page.dart';
@@ -211,18 +209,7 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: LocalTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(
-      page: AssetViewerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-      type: RouteType.custom(
-        customRouteBuilder: <T>(context, child, page) => PageRouteBuilder<T>(
-          fullscreenDialog: page.fullscreenDialog,
-          settings: page,
-          pageBuilder: (_, __, ___) => child,
-          opaque: false,
-        ),
-      ),
-    ),
+
     // AutoRoute(page: DriftMemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftFavoriteRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftTrashRoute.page, guards: [_authGuard, _duplicateGuard]),
