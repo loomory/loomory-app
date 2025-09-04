@@ -315,6 +315,7 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
     final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
+      //disableScaleGestures: true,
       imageProvider: getFullImageProvider(asset, size: size),
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,

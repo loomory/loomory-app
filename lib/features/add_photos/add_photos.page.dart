@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 @RoutePage()
 class AddPhotosPage extends ConsumerWidget {
@@ -23,7 +24,21 @@ class AddPhotosPage extends ConsumerWidget {
               child: Text("back"),
             ),
             Expanded(
-              child: Timeline(key: const Key("add-photos"), appBar: null, groupBy: GroupAssetsBy.none),
+              child: ProviderScope(
+                overrides: [
+                  timelineServiceProvider.overrideWith((ref) {
+                    final timelineService = ref.watch(timelineFactoryProvider).fromAssets(searchResult.assets);
+                    ref.onDispose(timelineService.dispose);
+                    return timelineService;
+                  }),
+                ],
+                child: Timeline(
+                  key: const Key("add-photos"),
+                  groupBy: GroupAssetsBy.none,
+                  appBar: null,
+                  //bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
+                ),
+              ),
             ),
           ],
         ),
