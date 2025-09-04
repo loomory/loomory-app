@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'insta_timeline/insta_timeline.widget.dart';
+import 'timeline/insta_timeline.widget.dart';
 
 @RoutePage()
 class MainTimelinePage extends ConsumerWidget {

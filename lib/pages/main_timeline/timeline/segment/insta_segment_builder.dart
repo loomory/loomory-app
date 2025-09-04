@@ -1,5 +1,5 @@
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'segment.model.dart';
+import 'insta_segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 
