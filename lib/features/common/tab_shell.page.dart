@@ -150,15 +150,6 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) async {
     }
     return;
   }
-  // else {
-  //   Future.delayed(const Duration(milliseconds: 1), () async {
-  //     final albums = await ref.read(localAlbumServiceProvider).getAll();
-  //     for (var album in albums) {
-  //       album = album.copyWith(backupSelection: BackupSelection.none);
-  //       await ref.read(localAlbumServiceProvider).update(album);
-  //     }
-  //   });
-  // }
 
   // Album page
   if (index == 3) {
