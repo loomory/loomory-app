@@ -18,6 +18,9 @@ dependencies:
   background_downloader: ^9.2.0
   cupertino_icons: ^1.0.8
   device_info_plus: ^11.3.3
+  # DB
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
   easy_localization: ^3.0.7+1

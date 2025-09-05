@@ -136,18 +136,9 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) async {
     ref.read(searchInputFocusProvider).requestFocus();
   }
 
-  // Hack to switch between all photos on device and photos in Immich
+  // Add button is not a traditional nav bar item but a "button"
   if (index == 2) {
-    final albums = await ref.read(localAlbumServiceProvider).getAll();
-    for (var album in albums) {
-      album = album.copyWith(backupSelection: BackupSelection.selected);
-      await ref.read(localAlbumServiceProvider).update(album);
-    }
     await ref.context.pushRoute(const AddPhotosRoute());
-    for (var album in albums) {
-      album = album.copyWith(backupSelection: BackupSelection.none);
-      await ref.read(localAlbumServiceProvider).update(album);
-    }
     return;
   }
 

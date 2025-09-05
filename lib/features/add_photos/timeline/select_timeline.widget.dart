@@ -27,9 +27,12 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
+import '../repository/local_assets.dart';
 import 'segment/select_segment_builder.dart';
 
-// The main timeline does not support groupBy.none
+// The main timeline does not support groupBy.none. This file is an almost identical clone of the
+// original timeline but we use our own segment builder here to just lay out photos in a filled grid.
+// I did not manage to use an override for the timelineSegmentProvider s
 final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) async* {
   final args = ref.watch(timelineArgsProvider);
   final columnCount = args.columnCount;
