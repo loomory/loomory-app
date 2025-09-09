@@ -3,9 +3,9 @@ import 'insta_segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 
-// Our insta segments are very different from the main timeline segments in Immich.
+// Our Insta segments are very different from the main timeline segments in Immich.
 // For us, each segment corresponds to a time bucket so it is simpler.
-// We do not have to care about dimensions, column count etc.
+// We do not have to care about dimensions, column count etc since we always use the full screen width.
 
 class InstaSegmentBuilder extends SegmentBuilder {
   const InstaSegmentBuilder({required super.buckets, super.spacing, super.groupBy});

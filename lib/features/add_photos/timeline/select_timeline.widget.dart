@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -19,15 +20,17 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-import '../repository/local_assets.dart';
+// Our local copy of the app bar
+import 'selection_sliver_app_bar.dart';
+
 import 'segment/select_segment_builder.dart';
 
 // The main timeline does not support groupBy.none. This file is an almost identical clone of the
@@ -290,6 +293,20 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       canPop: !isMultiSelectEnabled,
       onPopInvokedWithResult: (_, __) {
         if (isMultiSelectEnabled) {
+          if (!context.mounted) {
+            return;
+          }
+
+          // final successMessage = 'upload_action_prompt'.t(context: context, args: {'count': result.count.toString()});
+
+          // if (context.mounted) {
+          //   ImmichToast.show(
+          //     context: context,
+          //     msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+          //     gravity: ToastGravity.BOTTOM,
+          //     toastType: result.success ? ToastType.success : ToastType.error,
+          //   );
+
           ref.read(multiSelectProvider.notifier).reset();
         }
       },

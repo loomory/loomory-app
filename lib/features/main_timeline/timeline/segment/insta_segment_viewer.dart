@@ -6,16 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -30,17 +25,15 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
 
-// Our instagram like asset viewer
-// Each instance of this is a PageViewer allowing horizontal side scrolling of
-// in insta-segment.
-
-class InstaAssetViewer extends ConsumerStatefulWidget {
+// Our Instagram like SegmentViewer. A Segment in this layout is a day or a month depending on groupBy.
+// Each Segment contains one or more Assets that we can scroll horizontally within the Segment.
+class InstaSegmentViewer extends ConsumerStatefulWidget {
   final int initialIndex;
   final int assetsInSegment;
   final Platform? platform;
   final int? heroOffset;
 
-  const InstaAssetViewer({
+  const InstaSegmentViewer({
     super.key,
     required this.initialIndex,
     required this.assetsInSegment,
@@ -49,17 +42,12 @@ class InstaAssetViewer extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState createState() => _AssetViewerState();
+  ConsumerState createState() => _SegmentViewerState();
 }
 
-const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.7;
-
-class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
+class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
   late PageController pageController;
-  late DraggableScrollableController bottomSheetController;
-  PersistentBottomSheetController? sheetCloseController;
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
@@ -70,12 +58,8 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
   bool? hasDraggedDown;
   bool isSnapping = false;
   bool blockGestures = false;
-  bool dragInProgress = false;
-  bool shouldPopOnDrag = false;
   bool assetReloadRequested = false;
   double? initialScale;
-  double previousExtent = _kBottomSheetMinimumExtent;
-  Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
   int stackIndex = 0;
   BuildContext? scaffoldContext;
@@ -93,9 +77,8 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
     pageController = PageController(initialPage: 0);
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = widget.assetsInSegment;
-    bottomSheetController = DraggableScrollableController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _onAssetChanged(widget.initialIndex);
+      _onAssetChanged(0);
     });
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
@@ -104,7 +87,6 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
   @override
   void dispose() {
     pageController.dispose();
-    bottomSheetController.dispose();
     _cancelTimers();
     reloadSubscription?.cancel();
     _prevPreCacheStream?.removeListener(_dummyListener);
@@ -124,18 +106,18 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
     _delayedOperations.clear();
   }
 
-  double _getVerticalOffsetForBottomSheet(double extent) =>
-      (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
-
   ImageStream _precacheImage(BaseAsset asset) {
     final provider = getFullImageProvider(asset, size: context.sizeData);
     return provider.resolve(ImageConfiguration.empty)..addListener(_dummyListener);
   }
 
-  void _onAssetChanged(int index) async {
+  // The relativeIndex is the page number in the horizontal page controller, it always starts at 0
+  // To get the actual Immich index, we need widget.initialIndex (the first index in this groupBy) + relativeIndex (page number)
+  void _onAssetChanged(int relativeIndex) async {
     // Validate index bounds and try to get asset, loading buffer if needed
     final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
+    final absoluteIndex = widget.initialIndex + relativeIndex;
+    final asset = await timelineService.getAssetAsync(absoluteIndex);
 
     if (asset == null) {
       return;
@@ -151,7 +133,7 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
 
-    unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
+    unawaited(ref.read(timelineServiceProvider).preCacheAssets(absoluteIndex));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
@@ -160,8 +142,8 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
       if (!mounted) return;
 
       final (prevAsset, nextAsset) = await (
-        timelineService.getAssetAsync(index - 1),
-        timelineService.getAssetAsync(index + 1),
+        timelineService.getAssetAsync(absoluteIndex - 1),
+        timelineService.getAssetAsync(absoluteIndex + 1),
       ).wait;
       if (!mounted) return;
       _prevPreCacheStream?.removeListener(_dummyListener);
@@ -244,9 +226,10 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
   }
 
   void _onAssetReloadEvent() async {
-    final index = pageController.page?.round() ?? 0;
+    final relativeIndex = pageController.page?.round() ?? 0;
     final timelineService = ref.read(timelineServiceProvider);
-    final newAsset = await timelineService.getAssetAsync(index);
+    final absoluteIndex = widget.initialIndex + relativeIndex;
+    final newAsset = await timelineService.getAssetAsync(absoluteIndex);
 
     if (newAsset == null) {
       return;
@@ -260,7 +243,6 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
 
     setState(() {
       _onAssetChanged(pageController.page!.round());
-      sheetCloseController?.close();
     });
   }
 
@@ -297,12 +279,18 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
       );
     }
 
+    // Here we have the Asset so we know if it is a photo/video/favourite
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
 
+    return _imageBuilder(ctx, displayAsset);
+    // For now, like Apple, don't show moving video automatically in the timeline,
+    // you must tap the placeholder image to start the video.
+    // This hides the issue with Immich video_viewer.widget autostarting videos.
+    //return _imageBuilder(ctx, displayAsset);
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
     if (displayAsset.isImage && !isPlayingMotionVideo) {
       return _imageBuilder(ctx, displayAsset);
@@ -369,7 +357,9 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
-
+    // final currentAsset = ref.watch(currentAssetNotifier);
+    print("rebuild");
+    // print("CurrentAsset ${currentAsset.hashCode}");
     // Listen for casting changes and send initial asset to the cast provider
     ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
       if (!isCasting) return;
@@ -382,20 +372,28 @@ class _AssetViewerState extends ConsumerState<InstaAssetViewer> {
       });
     });
 
-    return PhotoViewGallery.builder(
-      gaplessPlayback: true,
-      loadingBuilder: _placeholderBuilder,
-      pageController: pageController,
-      scrollPhysics: platform.isIOS
-          ? const FastScrollPhysics() // Use bouncing physics for iOS
-          : const FastClampingScrollPhysics(), // Use heavy physics for Android
-      itemCount: totalAssets,
-      onPageChanged: _onPageChanged,
-      onPageBuild: _onPageBuild,
-      scaleStateChangedCallback: _onScaleStateChanged,
-      builder: _assetBuilder,
-      backgroundDecoration: BoxDecoration(color: backgroundColor),
-      enablePanAlways: true,
+    return Stack(
+      children: [
+        PhotoViewGallery.builder(
+          gaplessPlayback: true,
+          loadingBuilder: _placeholderBuilder,
+          pageController: pageController,
+          scrollPhysics: platform.isIOS
+              ? const FastScrollPhysics() // Use bouncing physics for iOS
+              : const FastClampingScrollPhysics(), // Use heavy physics for Android
+          itemCount: totalAssets,
+          onPageChanged: _onPageChanged,
+          onPageBuild: _onPageBuild,
+          scaleStateChangedCallback: _onScaleStateChanged,
+          builder: _assetBuilder,
+          backgroundDecoration: BoxDecoration(color: backgroundColor),
+          enablePanAlways: true,
+        ),
+        // if (currentAsset?.isFavorite == true)
+        //   Center(
+        //     child: Text("FAV", style: TextStyle(color: Colors.pink)),
+        //   ),
+      ],
     );
   }
 }
