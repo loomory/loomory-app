@@ -3,7 +3,7 @@ name: loomory
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.140.0+3010
+version: 1.141.1+3013
 
 environment:
   sdk: ^3.8.1

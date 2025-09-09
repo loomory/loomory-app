@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -88,7 +89,14 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     Widget navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         destinations: navigationDestinations
-            .map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label), selectedIcon: e.selectedIcon))
+            .map(
+              (e) => NavigationRailDestination(
+                icon: e.icon,
+                label: Text(e.label),
+                selectedIcon: e.selectedIcon,
+                disabled: !e.enabled,
+              ),
+            )
             .toList(),
         onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
@@ -131,7 +139,9 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) async {
   if (router.activeIndex == 0 && index == 0) {
     EventStream.shared.emit(const ScrollToTopEvent());
   }
-
+  if (index == 0) {
+    ref.invalidate(driftMemoryFutureProvider);
+  }
   // On Search page tapped
   if (router.activeIndex == 1 && index == 1) {
     ref.read(searchInputFocusProvider).requestFocus();
