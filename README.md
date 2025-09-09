@@ -31,3 +31,5 @@ git submodule update --init --recursive
 - Immich includes a bunch of header files in AppDelegate.swift. If an obj-c value is not found, make sure Immich
   has not added more included in AppDelegate.h. I think normally this is done in the briding header but let's copy
   what they do.
+
+- Adding breakpoints in VS code can cause strange behaviour over time with the app freezing. If you have problems try to delete all breakpoints first.

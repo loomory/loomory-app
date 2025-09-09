@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -11,14 +10,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
-import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -55,6 +49,7 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
   late Platform platform;
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
+  BaseAsset? currentAssetInSegment;
   bool? hasDraggedDown;
   bool isSnapping = false;
   bool blockGestures = false;
@@ -123,16 +118,6 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
       return;
     }
 
-    // Always holds the current asset from the timeline
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // The currentAssetNotifier actually holds the current asset that is displayed
-    // which could be stack children as well
-    ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo || asset.isMotionPhoto) {
-      ref.read(videoPlaybackValueProvider.notifier).reset();
-      ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
-
     unawaited(ref.read(timelineServiceProvider).preCacheAssets(absoluteIndex));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
@@ -153,37 +138,9 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
     });
     _delayedOperations.add(timer);
 
-    _handleCasting(asset);
-  }
-
-  void _handleCasting(BaseAsset asset) {
-    if (!ref.read(castProvider).isCasting) return;
-
-    // hide any casting snackbars if they exist
-    context.scaffoldMessenger.hideCurrentSnackBar();
-
-    // send image to casting if the server has it
-    if (asset.hasRemote) {
-      final remoteAsset = asset as RemoteAsset;
-
-      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
-    } else {
-      // casting cannot show local assets
-      context.scaffoldMessenger.clearSnackBars();
-
-      if (ref.read(castProvider).isCasting) {
-        ref.read(castProvider.notifier).stop();
-        context.scaffoldMessenger.showSnackBar(
-          SnackBar(
-            duration: const Duration(seconds: 2),
-            content: Text(
-              "local_asset_cast_failed".tr(),
-              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-            ),
-          ),
-        );
-      }
-    }
+    setState(() {
+      currentAssetInSegment = asset;
+    });
   }
 
   void _onPageBuild(PhotoViewControllerBase controller) {
@@ -212,6 +169,9 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
   }
 
   void _onTimelineReloadEvent() {
+    // assetsInSegment might be incorrect here. If we reload the timeline it could have changed but not have to check how this works
+    // Immich because if there is a timeline reload, it makes more sense that the build and models are regenerated
+    // and they probably are. TBI what triggers this to be called.
     totalAssets = widget.assetsInSegment;
     if (totalAssets == 0) {
       context.maybePop();
@@ -235,7 +195,7 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
       return;
     }
 
-    final currentAsset = ref.read(currentAssetNotifier);
+    final currentAsset = currentAssetInSegment;
     // Do not reload / close the bottom sheet if the asset has not changed
     if (newAsset.heroTag == currentAsset?.heroTag) {
       return;
@@ -248,12 +208,6 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
     return const Center(child: ImmichLoadingIndicator());
-  }
-
-  void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    if (scaleState != PhotoViewScaleState.initial) {
-      ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
   }
 
   void _onLongPress(_, __, ___) {
@@ -279,31 +233,20 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
       );
     }
 
-    // Here we have the Asset so we know if it is a photo/video/favourite
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
-
-    return _imageBuilder(ctx, displayAsset);
     // For now, like Apple, don't show moving video automatically in the timeline,
-    // you must tap the placeholder image to start the video.
-    // This hides the issue with Immich video_viewer.widget autostarting videos.
-    //return _imageBuilder(ctx, displayAsset);
-    final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
-    if (displayAsset.isImage && !isPlayingMotionVideo) {
-      return _imageBuilder(ctx, displayAsset);
-    }
-
-    return _videoBuilder(ctx, displayAsset);
+    return _imageBuilder(ctx, displayAsset);
   }
 
   PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
     final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
-      //disableScaleGestures: true,
+      disableGestures: true,
       imageProvider: getFullImageProvider(asset, size: size),
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
@@ -319,37 +262,6 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
     );
   }
 
-  GlobalKey _getVideoPlayerKey(String id) {
-    videoPlayerKeys.putIfAbsent(id, () => GlobalKey());
-    return videoPlayerKeys[id]!;
-  }
-
-  PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
-    return PhotoViewGalleryPageOptions.customChild(
-      onTapDown: _onTapDown,
-      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
-      filterQuality: FilterQuality.high,
-      maxScale: 1.0,
-      basePosition: Alignment.center,
-      child: SizedBox(
-        width: ctx.width,
-        height: ctx.height,
-        child: NativeVideoViewer(
-          key: _getVideoPlayerKey(asset.heroTag),
-          asset: asset,
-          image: Image(
-            key: ValueKey(asset),
-            image: getFullImageProvider(asset, size: ctx.sizeData),
-            fit: BoxFit.contain,
-            height: ctx.height,
-            width: ctx.width,
-            alignment: Alignment.center,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Rebuild the widget when the asset viewer state changes
@@ -357,20 +269,6 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
-    // final currentAsset = ref.watch(currentAssetNotifier);
-    print("rebuild");
-    // print("CurrentAsset ${currentAsset.hashCode}");
-    // Listen for casting changes and send initial asset to the cast provider
-    ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
-      if (!isCasting) return;
-
-      final asset = ref.read(currentAssetNotifier);
-      if (asset == null) return;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleCasting(asset);
-      });
-    });
 
     return Stack(
       children: [
@@ -384,15 +282,15 @@ class _SegmentViewerState extends ConsumerState<InstaSegmentViewer> {
           itemCount: totalAssets,
           onPageChanged: _onPageChanged,
           onPageBuild: _onPageBuild,
-          scaleStateChangedCallback: _onScaleStateChanged,
           builder: _assetBuilder,
           backgroundDecoration: BoxDecoration(color: backgroundColor),
           enablePanAlways: true,
         ),
-        // if (currentAsset?.isFavorite == true)
-        //   Center(
-        //     child: Text("FAV", style: TextStyle(color: Colors.pink)),
-        //   ),
+        // We need video info and heart icon (with button?) here depending on asset type
+        if (currentAssetInSegment?.isFavorite == true)
+          Center(
+            child: Text("FAV", style: TextStyle(color: Colors.pink)),
+          ),
       ],
     );
   }
