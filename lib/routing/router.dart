@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -20,6 +22,9 @@ import '../features/login/change_password.page.dart';
 import '../features/main_timeline/main_timeline.page.dart';
 import '../features/add_photos/add_photos.page.dart';
 import '../features/add_photos/placeholder.page.dart';
+import '../features/albums/albums.page.dart';
+import '../features/albums/remote_album.page.dart';
+import '../features/albums/asset_selection_timeline.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start
 import '../features/legacy/tab_controller.page.dart';
@@ -37,7 +42,7 @@ final appRouterProvider = Provider(
   ),
 );
 
-@AutoRouterConfig(replaceInRouteName: 'Page,Route', generateForDir: ['lib/pages/', 'lib/widgets/'])
+@AutoRouterConfig(replaceInRouteName: 'Page,Route', generateForDir: ['lib/features/', 'lib/widgets/'])
 class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
@@ -87,7 +92,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: PlaceholderRoute.page, guards: [_authGuard, _duplicateGuard]),
         //AutoRoute(page: DriftSearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
         // AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
-        // AutoRoute(page: DriftAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(page: AlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
@@ -208,7 +213,7 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: DriftBackupAlbumSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: LocalTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-    // AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
 
     // AutoRoute(page: DriftMemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftFavoriteRoute.page, guards: [_authGuard, _duplicateGuard]),
@@ -217,7 +222,7 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: DriftLockedFolderRoute.page, guards: [_authGuard, _lockedGuard, _duplicateGuard]),
     // AutoRoute(page: DriftVideoRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
-    // AutoRoute(page: DriftAssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: AssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftPartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftRecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftLocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
