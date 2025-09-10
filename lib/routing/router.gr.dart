@@ -27,6 +27,71 @@ class AddPhotosRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AlbumsPage]
+class AlbumsRoute extends PageRouteInfo<void> {
+  const AlbumsRoute({List<PageRouteInfo>? children})
+    : super(AlbumsRoute.name, initialChildren: children);
+
+  static const String name = 'AlbumsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AlbumsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [AssetSelectionTimelinePage]
+class AssetSelectionTimelineRoute
+    extends PageRouteInfo<AssetSelectionTimelineRouteArgs> {
+  AssetSelectionTimelineRoute({
+    Key? key,
+    Set<BaseAsset> lockedSelectionAssets = const {},
+    List<PageRouteInfo>? children,
+  }) : super(
+         AssetSelectionTimelineRoute.name,
+         args: AssetSelectionTimelineRouteArgs(
+           key: key,
+           lockedSelectionAssets: lockedSelectionAssets,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'AssetSelectionTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AssetSelectionTimelineRouteArgs>(
+        orElse: () => const AssetSelectionTimelineRouteArgs(),
+      );
+      return AssetSelectionTimelinePage(
+        key: args.key,
+        lockedSelectionAssets: args.lockedSelectionAssets,
+      );
+    },
+  );
+}
+
+class AssetSelectionTimelineRouteArgs {
+  const AssetSelectionTimelineRouteArgs({
+    this.key,
+    this.lockedSelectionAssets = const {},
+  });
+
+  final Key? key;
+
+  final Set<BaseAsset> lockedSelectionAssets;
+
+  @override
+  String toString() {
+    return 'AssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
+  }
+}
+
+/// generated route for
 /// [ChangeExperiencePage]
 class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
   ChangeExperienceRoute({
@@ -147,6 +212,43 @@ class PlaceholderRoute extends PageRouteInfo<void> {
       return const PlaceholderPage();
     },
   );
+}
+
+/// generated route for
+/// [RemoteAlbumPage]
+class RemoteAlbumRoute extends PageRouteInfo<RemoteAlbumRouteArgs> {
+  RemoteAlbumRoute({
+    Key? key,
+    required RemoteAlbum album,
+    List<PageRouteInfo>? children,
+  }) : super(
+         RemoteAlbumRoute.name,
+         args: RemoteAlbumRouteArgs(key: key, album: album),
+         initialChildren: children,
+       );
+
+  static const String name = 'RemoteAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RemoteAlbumRouteArgs>();
+      return RemoteAlbumPage(key: args.key, album: args.album);
+    },
+  );
+}
+
+class RemoteAlbumRouteArgs {
+  const RemoteAlbumRouteArgs({this.key, required this.album});
+
+  final Key? key;
+
+  final RemoteAlbum album;
+
+  @override
+  String toString() {
+    return 'RemoteAlbumRouteArgs{key: $key, album: $album}';
+  }
 }
 
 /// generated route for

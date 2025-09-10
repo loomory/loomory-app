@@ -107,7 +107,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 
     return AutoTabsRouter(
       //routes: [const MainTimelineRoute(), DriftSearchRoute(), const DriftAlbumsRoute(), const DriftLibraryRoute()],
-      routes: [const MainTimelineRoute(), const MainTimelineRoute(), const PlaceholderRoute()],
+      routes: [const MainTimelineRoute(), const MainTimelineRoute(), const PlaceholderRoute(), AlbumsRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
