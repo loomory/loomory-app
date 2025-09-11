@@ -92,6 +92,64 @@ class AssetSelectionTimelineRouteArgs {
 }
 
 /// generated route for
+/// [AssetViewerPage]
+class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
+  AssetViewerRoute({
+    Key? key,
+    required int initialIndex,
+    required TimelineService timelineService,
+    int? heroOffset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         AssetViewerRoute.name,
+         args: AssetViewerRouteArgs(
+           key: key,
+           initialIndex: initialIndex,
+           timelineService: timelineService,
+           heroOffset: heroOffset,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'AssetViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AssetViewerRouteArgs>();
+      return AssetViewerPage(
+        key: args.key,
+        initialIndex: args.initialIndex,
+        timelineService: args.timelineService,
+        heroOffset: args.heroOffset,
+      );
+    },
+  );
+}
+
+class AssetViewerRouteArgs {
+  const AssetViewerRouteArgs({
+    this.key,
+    required this.initialIndex,
+    required this.timelineService,
+    this.heroOffset,
+  });
+
+  final Key? key;
+
+  final int initialIndex;
+
+  final TimelineService timelineService;
+
+  final int? heroOffset;
+
+  @override
+  String toString() {
+    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset}';
+  }
+}
+
+/// generated route for
 /// [ChangeExperiencePage]
 class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
   ChangeExperienceRoute({

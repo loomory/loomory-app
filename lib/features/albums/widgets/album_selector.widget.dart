@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -515,6 +516,56 @@ class _GridAlbumCard extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                   ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  onPressed: () async {
+                    await showCupertinoModalPopup<String>(
+                      context: context,
+                      builder: (context) => CupertinoActionSheet(
+                        title: Text('${album.name[0].toUpperCase()}${album.name.substring(1)}'),
+                        actions: [
+                          CupertinoActionSheetAction(
+                            onPressed: () => {
+                              // TODO route to add to album selector
+                              Navigator.pop(context),
+                            },
+                            child: Text("Add photos to album"),
+                          ),
+                          CupertinoActionSheetAction(
+                            onPressed: () => {
+                              Navigator.pop(context),
+
+                              // TODO route to invites
+                            },
+                            child: Text("Invite collaborators"),
+                          ),
+                          CupertinoActionSheetAction(
+                            onPressed: () => {
+                              Navigator.pop(context),
+                              // create link
+                            },
+                            child: Text("Create sharing link"),
+                          ),
+                          CupertinoActionSheetAction(
+                            isDestructiveAction: true,
+                            onPressed: () => {
+                              Navigator.pop(context),
+                              // TODO confirm deletion
+                            },
+                            child: Text("Delete album"),
+                          ),
+                        ],
+                        cancelButton: CupertinoActionSheetAction(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text("Cancel"),
+                        ),
+                      ),
+                    );
+                  },
+                  icon: Icon(color: Colors.white, Icons.more_vert_sharp),
                 ),
               ),
             ],
