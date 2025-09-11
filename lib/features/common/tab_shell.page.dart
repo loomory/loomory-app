@@ -61,8 +61,8 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
-        icon: const Icon(Icons.photo_library_outlined),
-        selectedIcon: Icon(Icons.photo_library, color: context.primaryColor),
+        icon: const Icon(Icons.house),
+        selectedIcon: Icon(Icons.house, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'search'.tr(),
@@ -204,6 +204,7 @@ class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
     }
 
     return NavigationBar(
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       selectedIndex: widget.tabsRouter.activeIndex,
       onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
       destinations: widget.destinations,

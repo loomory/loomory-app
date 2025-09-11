@@ -69,6 +69,9 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      height: 60,
+      indicatorColor: colorScheme.primary.withValues(alpha: 0.1),
+      surfaceTintColor: Colors.transparent,
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
