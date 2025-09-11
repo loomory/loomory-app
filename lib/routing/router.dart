@@ -25,7 +25,6 @@ import '../features/main_timeline/main_timeline.page.dart';
 import '../features/add_photos/add_photos.page.dart';
 import '../features/add_photos/placeholder.page.dart';
 import '../features/albums/albums.page.dart';
-import '../features/albums/remote_album.page.dart';
 import '../features/albums/asset_selection_timeline.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start
@@ -215,7 +214,7 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: DriftBackupAlbumSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: LocalTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
+    // AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(
       page: AssetViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],

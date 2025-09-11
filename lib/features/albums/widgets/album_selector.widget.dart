@@ -10,21 +10,19 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+
+import '../../../routing/router.dart';
 
 typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
 
@@ -528,9 +526,9 @@ class _GridAlbumCard extends ConsumerWidget {
                         title: Text('${album.name[0].toUpperCase()}${album.name.substring(1)}'),
                         actions: [
                           CupertinoActionSheetAction(
-                            onPressed: () => {
-                              // TODO route to add to album selector
-                              Navigator.pop(context),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              await addAssets(context, ref, album);
                             },
                             child: Text("Add photos to album"),
                           ),
@@ -551,9 +549,10 @@ class _GridAlbumCard extends ConsumerWidget {
                           ),
                           CupertinoActionSheetAction(
                             isDestructiveAction: true,
-                            onPressed: () => {
-                              Navigator.pop(context),
-                              // TODO confirm deletion
+                            onPressed: () async {
+                              Navigator.pop(context);
+
+                              await deleteAlbum(context, ref, album);
                             },
                             child: Text("Delete album"),
                           ),
@@ -574,8 +573,83 @@ class _GridAlbumCard extends ConsumerWidget {
       ),
     );
   }
+
+  // Currently only showing
+  Future<void> addAssets(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
+    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
+
+    final newAssets = await context.pushRoute<Set<BaseAsset>>(
+      AssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
+    );
+
+    if (newAssets == null || newAssets.isEmpty) {
+      return;
+    }
+
+    final added = await ref
+        .read(remoteAlbumProvider.notifier)
+        .addAssets(
+          album.id,
+          newAssets.map((asset) {
+            final remoteAsset = asset as RemoteAsset;
+            return remoteAsset.id;
+          }).toList(),
+        );
+
+    if (added > 0) {
+      ImmichToast.show(
+        context: context,
+        msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
+        toastType: ToastType.success,
+      );
+    }
+  }
+
+  Future<void> deleteAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('delete_album'.t(context: context)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('album_delete_confirmation'.t(context: context, args: {'album': album.name})),
+              const SizedBox(height: 8),
+              Text('album_delete_confirmation_description'.t(context: context)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('cancel'.t(context: context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+              child: Text('delete_album'.t(context: context)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
+        // TODO, do we have to reload or invalidate something here after deletion to update the list?
+      } catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: 'album_viewer_appbar_share_err_delete'.t(context: context),
+          toastType: ToastType.error,
+        );
+      }
+    }
+  }
 }
 
+// TODO Don't think we need this here, creating new album will be done with the + button,
 class AddToAlbumHeader extends ConsumerWidget {
   const AddToAlbumHeader({super.key});
 
@@ -596,7 +670,7 @@ class AddToAlbumHeader extends ConsumerWidget {
 
       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
       ref.read(multiSelectProvider.notifier).reset();
-      context.pushRoute(RemoteAlbumRoute(album: newAlbum));
+      //context.pushRoute(RemoteAlbumRoute(album: newAlbum));
     }
 
     return SliverPadding(

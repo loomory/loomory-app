@@ -273,43 +273,6 @@ class PlaceholderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [RemoteAlbumPage]
-class RemoteAlbumRoute extends PageRouteInfo<RemoteAlbumRouteArgs> {
-  RemoteAlbumRoute({
-    Key? key,
-    required RemoteAlbum album,
-    List<PageRouteInfo>? children,
-  }) : super(
-         RemoteAlbumRoute.name,
-         args: RemoteAlbumRouteArgs(key: key, album: album),
-         initialChildren: children,
-       );
-
-  static const String name = 'RemoteAlbumRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<RemoteAlbumRouteArgs>();
-      return RemoteAlbumPage(key: args.key, album: args.album);
-    },
-  );
-}
-
-class RemoteAlbumRouteArgs {
-  const RemoteAlbumRouteArgs({this.key, required this.album});
-
-  final Key? key;
-
-  final RemoteAlbum album;
-
-  @override
-  String toString() {
-    return 'RemoteAlbumRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<void> {
   const SplashScreenRoute({List<PageRouteInfo>? children})
