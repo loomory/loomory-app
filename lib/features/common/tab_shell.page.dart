@@ -22,7 +22,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:loomory/routing/router.dart';
-import 'package:loomory/features/common/add_options_bottom_sheet.dart';
+import 'package:loomory/features/add_options/add_options_bottom_sheet.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
