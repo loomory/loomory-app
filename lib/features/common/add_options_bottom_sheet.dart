@@ -3,10 +3,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/common/drag_sheet.dart';
 import 'package:loomory/routing/router.dart';
 
 enum AddOptions { createAlbum, joinAlbum, createEvent, addPhotos }
+
+class DraggingHandle extends StatelessWidget {
+  const DraggingHandle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 4,
+      width: 35,
+      decoration: BoxDecoration(
+        color: context.themeData.dividerColor,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+      ),
+    );
+  }
+}
 
 class AddOptionsBottomSheet extends ConsumerWidget {
   const AddOptionsBottomSheet({super.key});
@@ -22,7 +37,7 @@ class AddOptionsBottomSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          const Align(alignment: Alignment.center, child: CustomDraggingHandle()),
+          const Align(alignment: Alignment.center, child: DraggingHandle()),
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
