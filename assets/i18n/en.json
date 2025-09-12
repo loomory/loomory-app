@@ -1,3 +1,12 @@
 {
-   "title":"title from translation"
+   "title": "title from translation",
+   "add_options_title": "What would you like to add?",
+   "create_album_title": "Create Album",
+   "create_album_description": "Personal or shared album for curated memories with families, friends, pets",
+   "join_album_title": "Join Album",
+   "join_album_description": "Add and potentially contribute to an album that someone else has created",
+   "create_event_title": "Create Event",
+   "create_event_description": "Personal or shared album with a pre-set timeline, such as a wedding or graduation",
+   "add_photos_title": "Add Photos to Timeline",
+   "add_photos_description": "Upload important memories to your loomory timeline (can always be added to albums later)"
 }

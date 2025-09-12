@@ -209,6 +209,22 @@ class ChangePasswordRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CreateAlbumPage]
+class CreateAlbumRoute extends PageRouteInfo<void> {
+  const CreateAlbumRoute({List<PageRouteInfo>? children})
+    : super(CreateAlbumRoute.name, initialChildren: children);
+
+  static const String name = 'CreateAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CreateAlbumPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})

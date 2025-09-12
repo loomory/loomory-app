@@ -13,6 +13,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -500,8 +501,8 @@ class _GridAlbumCard extends ConsumerWidget {
                 child: album.thumbnailAssetId != null
                     ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
                     : Container(
-                        color: context.colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
+                        color: Colors.grey,
+                        child: Center(child: const Icon(Icons.photo_album_rounded, size: 100, color: Colors.white)),
                       ),
               ),
               Align(
@@ -528,7 +529,18 @@ class _GridAlbumCard extends ConsumerWidget {
                           CupertinoActionSheetAction(
                             onPressed: () async {
                               Navigator.pop(context);
-                              await addAssets(context, ref, album);
+                              addAssets(context, ref, album).then((_) async {
+                                try {
+                                  // Trigger proper remote sync to get the Album thumbnail from the server and store
+                                  // it in our local database
+                                  await ref.read(backgroundSyncProvider).syncRemote();
+                                  // Refresh from our local database will cause the correct thumbnail to show
+                                  // in the Albums grid
+                                  await ref.read(remoteAlbumProvider.notifier).refresh();
+                                } catch (e) {
+                                  debugPrint("Failed to add assets to album : $e");
+                                }
+                              });
                             },
                             child: Text("Add photos to album"),
                           ),
@@ -597,11 +609,11 @@ class _GridAlbumCard extends ConsumerWidget {
         );
 
     if (added > 0) {
-      ImmichToast.show(
-        context: context,
-        msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
-        toastType: ToastType.success,
-      );
+      // ImmichToast.show(
+      //   context: context,
+      //   msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
+      //   toastType: ToastType.success,
+      // );
     }
   }
 
@@ -637,7 +649,6 @@ class _GridAlbumCard extends ConsumerWidget {
     if (confirmed == true) {
       try {
         await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
-        // TODO, do we have to reload or invalidate something here after deletion to update the list?
       } catch (e) {
         ImmichToast.show(
           context: context,

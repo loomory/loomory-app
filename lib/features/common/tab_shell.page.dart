@@ -22,6 +22,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:loomory/routing/router.dart';
+import 'package:loomory/features/common/add_options_bottom_sheet.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -149,7 +150,23 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) async {
 
   // Add button is not a traditional nav bar item but a "button"
   if (index == 2) {
-    await ref.context.pushRoute(const AddPhotosRoute());
+    final AddOptions? result = await showModalBottomSheet<AddOptions>(
+      context: ref.context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AddOptionsBottomSheet(),
+    );
+    switch (result) {
+      case AddOptions.createAlbum:
+      case AddOptions.createEvent:
+      case AddOptions.joinAlbum:
+        ref.read(remoteAlbumProvider.notifier).refresh();
+        router.setActiveIndex(3);
+      case AddOptions.addPhotos:
+        router.setActiveIndex(0);
+      default:
+        return;
+    }
     return;
   }
 

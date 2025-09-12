@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/utils/migration.dart';
 import 'package:loomory/features/common/asset_viewer.page.dart';
 
 import '../../routing/router.dart';
