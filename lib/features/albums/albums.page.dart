@@ -9,30 +9,23 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:loomory/features/common/asset_viewer.page.dart';
 
 import '../../routing/router.dart';
 import 'widgets/album_selector.widget.dart';
 
 @RoutePage()
-class AlbumsPage extends ConsumerStatefulWidget {
+class AlbumsPage extends ConsumerWidget {
   const AlbumsPage({super.key});
 
   @override
-  ConsumerState<AlbumsPage> createState() => _AlbumsPageState();
-}
-
-class _AlbumsPageState extends ConsumerState<AlbumsPage> {
-  Future<void> onRefresh() async {
-    await ref.read(remoteAlbumProvider.notifier).refresh();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: RefreshIndicator(
-        onRefresh: onRefresh,
+        onRefresh: () async {
+          await ref.read(remoteAlbumProvider.notifier).refresh();
+          // Not sure if this refresh does much, maybe we need to do the remoteSync if this is really needed here?
+        },
         edgeOffset: 100,
         child: CustomScrollView(
           slivers: [
@@ -86,9 +79,7 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
                 } catch (e) {
                   eventSubscription?.cancel();
                   // Handle error - timeline failed to initialize
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load album: $e')));
-                  }
+                  debugPrint("Error: handling album timeline $e");
                 }
               },
             ),
