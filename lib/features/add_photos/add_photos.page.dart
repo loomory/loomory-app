@@ -42,6 +42,7 @@ class AddPhotosPage extends ConsumerWidget {
               }),
             ],
             child: SelectTimeline(
+              // TODO is this even needed, in create album we use the normal Timeline and it is ok?
               key: const Key("add-photos"),
               groupBy: GroupAssetsBy.none,
               appBar: null,

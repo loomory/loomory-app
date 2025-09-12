@@ -8,7 +8,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -20,7 +19,6 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -28,40 +26,10 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
-// Our local copy of the app bar
-import 'selection_sliver_app_bar.dart';
-
-import 'segment/select_segment_builder.dart';
-
-// The main timeline does not support groupBy.none. This file is an almost identical clone of the
-// original timeline but we use our own segment builder here to just lay out photos in a filled grid.
-// I did not manage to use an override for the timelineSegmentProvider s
-
-// TODO, it seems to work fine with regular Timeline in CreateAlbum, no special segments or anything
-// Investigate why, maybe we can simplify and avoid these custom segments.
-final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) async* {
-  final args = ref.watch(timelineArgsProvider);
-  final columnCount = args.columnCount;
-  final spacing = args.spacing;
-  final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
-  final tileExtent = math.max(0, availableTileWidth) / columnCount;
-
-  final groupBy = GroupAssetsBy.none;
-
-  final timelineService = ref.watch(timelineServiceProvider);
-  yield* timelineService.watchBuckets().map((buckets) {
-    return SelectSegmentBuilder(
-      buckets: buckets,
-      tileHeight: tileExtent,
-      columnCount: columnCount,
-      spacing: spacing,
-      groupBy: groupBy,
-    ).generate();
-  });
-}, dependencies: [timelineServiceProvider, timelineArgsProvider]);
-
-class SelectTimeline extends StatelessWidget {
-  const SelectTimeline({
+// The standard timeline with these exceptions:
+// 1. In selection mode, the Sliver AppBar has been removed. We want to use our own.
+class DSTimeline extends StatelessWidget {
+  const DSTimeline({
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
@@ -296,20 +264,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       canPop: !isMultiSelectEnabled,
       onPopInvokedWithResult: (_, __) {
         if (isMultiSelectEnabled) {
-          if (!context.mounted) {
-            return;
-          }
-
-          // final successMessage = 'upload_action_prompt'.t(context: context, args: {'count': result.count.toString()});
-
-          // if (context.mounted) {
-          //   ImmichToast.show(
-          //     context: context,
-          //     msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-          //     gravity: ToastGravity.BOTTOM,
-          //     toastType: result.success ? ToastType.success : ToastType.error,
-          //   );
-
+          final t = ref.read(multiSelectProvider).selectedAssets.length;
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
@@ -329,7 +284,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             physics: _scrollPhysics,
             cacheExtent: maxHeight * 2,
             slivers: [
-              if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+              // We want to control the AppBar ourselves
+              // if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
               if (widget.topSliverWidget != null) widget.topSliverWidget!,
               _SliverSegmentedList(
                 segments: segments,

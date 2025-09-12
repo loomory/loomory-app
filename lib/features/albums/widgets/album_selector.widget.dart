@@ -528,7 +528,6 @@ class _GridAlbumCard extends ConsumerWidget {
                         actions: [
                           CupertinoActionSheetAction(
                             onPressed: () async {
-                              Navigator.pop(context);
                               addAssets(context, ref, album).then((_) async {
                                 try {
                                   // Trigger proper remote sync to get the Album thumbnail from the server and store
@@ -541,6 +540,7 @@ class _GridAlbumCard extends ConsumerWidget {
                                   debugPrint("Failed to add assets to album : $e");
                                 }
                               });
+                              Navigator.pop(context);
                             },
                             child: Text("Add photos to album"),
                           ),
@@ -562,9 +562,8 @@ class _GridAlbumCard extends ConsumerWidget {
                           CupertinoActionSheetAction(
                             isDestructiveAction: true,
                             onPressed: () async {
-                              Navigator.pop(context);
-
                               await deleteAlbum(context, ref, album);
+                              Navigator.pop(context);
                             },
                             child: Text("Delete album"),
                           ),

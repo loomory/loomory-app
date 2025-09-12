@@ -7,6 +7,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
+// Used for adding photos to existing Album. Checks remote only assets (right now)
 @RoutePage()
 class AssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> lockedSelectionAssets;
