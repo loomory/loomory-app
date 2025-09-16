@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -26,11 +25,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final addButtonEnabled = useState(false);
 
-    // Get the service from the root scope to be absolutely sure
-    final albumService = ref.read(albumExtServiceProvider);
-
-    final localAssetsAsync = ref.watch(allAssetsProvider);
-    return localAssetsAsync.when(
+    final allAssetsAsync = ref.watch(allAssetsProvider);
+    return allAssetsAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) => Scaffold(body: Center(child: Text('Error loading assets: $error'))),
       data: (assets) => SafeArea(
@@ -66,8 +62,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                     onPressed: addButtonEnabled.value
                         ? () {
                             final selectedAssets = ref.read(multiSelectProvider).selectedAssets;
-                            // Use the service for background execution
-                            albumService.createAlbum(albumTitleController.value.text, selectedAssets);
+                            ref
+                                .read(albumExtServiceProvider)
+                                .createAlbum(albumTitleController.value.text, selectedAssets);
                             context.pop();
                           }
                         : null,

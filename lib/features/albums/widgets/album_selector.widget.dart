@@ -26,6 +26,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
+import '../../../design_system/ds_searchbar.dart';
 import '../../../routing/router.dart';
 
 typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
@@ -159,7 +160,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     return MultiSliver(
       children: [
-        _SearchBar(
+        DSSearchBar(
           searchController: searchController,
           searchFocusNode: searchFocusNode,
           onSearch: onSearch,
@@ -304,60 +305,6 @@ class _SortButtonState extends ConsumerState<_SortButton> {
           ),
         );
       },
-    );
-  }
-}
-
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({
-    required this.searchController,
-    required this.searchFocusNode,
-    required this.onSearch,
-    required this.filterMode,
-    required this.onClearSearch,
-  });
-
-  final TextEditingController searchController;
-  final FocusNode searchFocusNode;
-  final void Function(String, QuickFilterMode) onSearch;
-  final QuickFilterMode filterMode;
-  final VoidCallback onClearSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      sliver: SliverToBoxAdapter(
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-            gradient: LinearGradient(
-              colors: [
-                context.colorScheme.primary.withValues(alpha: 0.075),
-                context.colorScheme.primary.withValues(alpha: 0.09),
-                context.colorScheme.primary.withValues(alpha: 0.075),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              transform: const GradientRotation(0.5 * pi),
-            ),
-          ),
-          child: SearchField(
-            autofocus: false,
-            contentPadding: const EdgeInsets.all(16),
-            hintText: 'search_albums'.tr(),
-            prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: searchController.text.isNotEmpty
-                ? IconButton(icon: const Icon(Icons.clear_rounded), onPressed: onClearSearch)
-                : null,
-            controller: searchController,
-            onChanged: (_) => onSearch(searchController.text, filterMode),
-            focusNode: searchFocusNode,
-            onTapOutside: (_) => searchFocusNode.unfocus(),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -538,13 +485,13 @@ class _GridAlbumCard extends ConsumerWidget {
                         actions: [
                           CupertinoActionSheetAction(
                             onPressed: () async {
-                              addAssets(context, ref, album).then((_) async {
-                                // Here we must also use our own timeline with non-remote images!!!
-                                //await refreshSingleAlbum(ref, album.id);
-                                await ref.read(backgroundSyncProvider).syncRemote();
-                                await ref.read(remoteAlbumProvider.notifier).refresh();
-                              });
                               Navigator.pop(context);
+                              final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
+
+                              final _ = await context.pushRoute<Set<BaseAsset>>(
+                                AssetSelectionTimelineRoute(album: album, lockedSelectionAssets: albumAssets.toSet()),
+                              );
+                              await ref.read(remoteAlbumProvider.notifier).refresh();
                             },
                             child: Text("Add photos to album"),
                           ),
@@ -587,36 +534,6 @@ class _GridAlbumCard extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Future<void> addAssets(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
-    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
-
-    final _ = await context.pushRoute<Set<BaseAsset>>(
-      AssetSelectionTimelineRoute(album: album, lockedSelectionAssets: albumAssets.toSet()),
-    );
-
-    // if (newAssets == null || newAssets.isEmpty) {
-    //   return;
-    // }
-
-    // final added = await ref
-    //     .read(remoteAlbumProvider.notifier)
-    //     .addAssets(
-    //       album.id,
-    //       newAssets.map((asset) {
-    //         final remoteAsset = asset as RemoteAsset;
-    //         return remoteAsset.id;
-    //       }).toList(),
-    //     );
-
-    // if (added > 0) {
-    //   // ImmichToast.show(
-    //   //   context: context,
-    //   //   msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
-    //   //   toastType: ToastType.success,
-    //   // );
-    // }
   }
 
   Future<void> deleteAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
