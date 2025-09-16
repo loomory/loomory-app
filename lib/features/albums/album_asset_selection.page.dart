@@ -3,34 +3,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-
-import 'package:loomory/design_system/ds_input_field.dart';
+import 'package:immich_mobile/services/album.service.dart';
+import 'package:loomory/repositories/local_assets.dart';
 
 import '../../design_system/ds_select_timeline.dart';
 import '../../services/album_ext.service.dart';
-import '../../repositories/local_assets.dart';
 
+// Used for adding photos to existing Album.
 @RoutePage()
-class CreateAlbumPage extends HookConsumerWidget {
-  const CreateAlbumPage({super.key});
+class AssetSelectionTimelinePage extends HookConsumerWidget {
+  final Set<BaseAsset> lockedSelectionAssets;
+  final RemoteAlbum album;
+  const AssetSelectionTimelinePage({super.key, required this.album, this.lockedSelectionAssets = const {}});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumTitleController = useTextEditingController();
-    final albumTitleTextFieldFocusNode = useFocusNode();
-    final addButtonEnabled = useState(false);
+    final allAssetsAsync = ref.watch(allAssetsProvider);
 
-    // Get the service from the root scope to be absolutely sure
-    final albumService = ref.read(albumExtServiceProvider);
-
-    final localAssetsAsync = ref.watch(allAssetsProvider);
-    return localAssetsAsync.when(
+    return allAssetsAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) => Scaffold(body: Center(child: Text('Error loading assets: $error'))),
       data: (assets) => SafeArea(
@@ -50,10 +47,11 @@ class CreateAlbumPage extends HookConsumerWidget {
           ],
           child: Consumer(
             builder: (context, ref, child) {
+              ref.watch(multiSelectProvider); // React to selection changes so we can activate the Add button
               return CupertinoPageScaffold(
                 navigationBar: CupertinoNavigationBar(
                   backgroundColor: context.scaffoldBackgroundColor,
-                  middle: const Text('create_album').t(),
+                  middle: const Text('add_to_album').t(),
                   leading: CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Icon(CupertinoIcons.back),
@@ -63,46 +61,17 @@ class CreateAlbumPage extends HookConsumerWidget {
                   ),
                   trailing: CupertinoButton(
                     padding: EdgeInsets.zero,
-                    onPressed: addButtonEnabled.value
+                    onPressed: ref.read(multiSelectProvider).selectedAssets.isNotEmpty
                         ? () {
                             final selectedAssets = ref.read(multiSelectProvider).selectedAssets;
-                            // Use the service for background execution
-                            albumService.createAlbum(albumTitleController.value.text, selectedAssets);
+                            ref.read(albumExtServiceProvider).addToAlbum(album, selectedAssets);
                             context.pop();
                           }
                         : null,
                     child: Icon(CupertinoIcons.add),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: DSInputField(
-                        controller: albumTitleController,
-                        placeholder: "Album name",
-                        focusNode: albumTitleTextFieldFocusNode,
-                        onTapOutside: (_) => albumTitleTextFieldFocusNode.unfocus(),
-                        onSubmitted: (_) => albumTitleTextFieldFocusNode.unfocus(),
-                        onEditingComplete: () => albumTitleTextFieldFocusNode.unfocus(),
-                        onChanged: (final albumName) {
-                          if (albumName.isNotEmpty) {
-                            if (addButtonEnabled.value == false) {
-                              addButtonEnabled.value = true;
-                            }
-                          } else {
-                            if (addButtonEnabled.value) {
-                              addButtonEnabled.value = false;
-                            }
-                          }
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: DSTimeline(key: const Key("create-album"), groupBy: GroupAssetsBy.none, appBar: null),
-                    ),
-                  ],
-                ),
+                child: DSTimeline(key: const Key("add-to-album"), groupBy: GroupAssetsBy.none, appBar: null),
               );
             },
           ),

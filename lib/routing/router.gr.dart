@@ -48,12 +48,14 @@ class AssetSelectionTimelineRoute
     extends PageRouteInfo<AssetSelectionTimelineRouteArgs> {
   AssetSelectionTimelineRoute({
     Key? key,
+    required RemoteAlbum album,
     Set<BaseAsset> lockedSelectionAssets = const {},
     List<PageRouteInfo>? children,
   }) : super(
          AssetSelectionTimelineRoute.name,
          args: AssetSelectionTimelineRouteArgs(
            key: key,
+           album: album,
            lockedSelectionAssets: lockedSelectionAssets,
          ),
          initialChildren: children,
@@ -64,11 +66,10 @@ class AssetSelectionTimelineRoute
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<AssetSelectionTimelineRouteArgs>(
-        orElse: () => const AssetSelectionTimelineRouteArgs(),
-      );
+      final args = data.argsAs<AssetSelectionTimelineRouteArgs>();
       return AssetSelectionTimelinePage(
         key: args.key,
+        album: args.album,
         lockedSelectionAssets: args.lockedSelectionAssets,
       );
     },
@@ -78,16 +79,19 @@ class AssetSelectionTimelineRoute
 class AssetSelectionTimelineRouteArgs {
   const AssetSelectionTimelineRouteArgs({
     this.key,
+    required this.album,
     this.lockedSelectionAssets = const {},
   });
 
   final Key? key;
 
+  final RemoteAlbum album;
+
   final Set<BaseAsset> lockedSelectionAssets;
 
   @override
   String toString() {
-    return 'AssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
+    return 'AssetSelectionTimelineRouteArgs{key: $key, album: $album, lockedSelectionAssets: $lockedSelectionAssets}';
   }
 }
 

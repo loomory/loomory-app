@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -23,6 +24,7 @@ class AlbumsPage extends ConsumerWidget {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
+          await ref.read(backgroundSyncProvider).syncRemote();
           await ref.read(remoteAlbumProvider.notifier).refresh();
           // Not sure if this refresh does much, maybe we need to do the remoteSync if this is really needed here?
         },

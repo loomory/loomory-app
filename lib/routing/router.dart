@@ -25,7 +25,7 @@ import '../features/main_timeline/main_timeline.page.dart';
 import '../features/add_photos/add_photos.page.dart';
 import '../features/add_options/placeholder.page.dart';
 import '../features/albums/albums.page.dart';
-import '../features/albums/asset_selection_timeline.page.dart';
+import '../features/albums/album_asset_selection.page.dart';
 import '../features/albums/create_album.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start

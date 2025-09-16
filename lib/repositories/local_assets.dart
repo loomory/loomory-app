@@ -6,7 +6,15 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
+// All local assets, this includes the ones also synced to the server
 final localAssetRepository = Provider<LocalAssetsRepository>((ref) => LocalAssetsRepository(ref.watch(driftProvider)));
+
+// All assets
+final allAssetsProvider = FutureProvider<List<BaseAsset>>((ref) async {
+  final repository = ref.watch(localAssetRepository);
+  final localAssets = await repository.getAllLocalAssets();
+  return localAssets.cast<BaseAsset>();
+});
 
 class LocalAssetsRepository extends DriftLocalAssetRepository {
   final Drift _db;

@@ -18,7 +18,10 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
+// ignore: import_rule_openapi
+import 'package:openapi/api.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -103,9 +106,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   }
 
   Future<void> sortAlbums() async {
+    final albumState = ref.read(remoteAlbumProvider);
     final sorted = await ref
         .read(remoteAlbumProvider.notifier)
-        .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
+        .sortAlbums(albumState.albums, sort.mode, isReverse: sort.isReverse);
 
     setState(() {
       sortedAlbums = sorted;
@@ -144,6 +148,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserProvider)?.id;
+
+    // Watch the provider to trigger rebuilds when albums change
+    ref.watch(remoteAlbumProvider);
 
     // refilter and sort when albums change
     ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {
@@ -524,21 +531,18 @@ class _GridAlbumCard extends ConsumerWidget {
                     await showCupertinoModalPopup<String>(
                       context: context,
                       builder: (context) => CupertinoActionSheet(
-                        title: Text('${album.name[0].toUpperCase()}${album.name.substring(1)}'),
+                        title: Text(
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+                          '${album.name[0].toUpperCase()}${album.name.substring(1)}',
+                        ),
                         actions: [
                           CupertinoActionSheetAction(
                             onPressed: () async {
                               addAssets(context, ref, album).then((_) async {
-                                try {
-                                  // Trigger proper remote sync to get the Album thumbnail from the server and store
-                                  // it in our local database
-                                  await ref.read(backgroundSyncProvider).syncRemote();
-                                  // Refresh from our local database will cause the correct thumbnail to show
-                                  // in the Albums grid
-                                  await ref.read(remoteAlbumProvider.notifier).refresh();
-                                } catch (e) {
-                                  debugPrint("Failed to add assets to album : $e");
-                                }
+                                // Here we must also use our own timeline with non-remote images!!!
+                                //await refreshSingleAlbum(ref, album.id);
+                                await ref.read(backgroundSyncProvider).syncRemote();
+                                await ref.read(remoteAlbumProvider.notifier).refresh();
                               });
                               Navigator.pop(context);
                             },
@@ -585,35 +589,34 @@ class _GridAlbumCard extends ConsumerWidget {
     );
   }
 
-  // Currently only showing
   Future<void> addAssets(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
     final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
 
-    final newAssets = await context.pushRoute<Set<BaseAsset>>(
-      AssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
+    final _ = await context.pushRoute<Set<BaseAsset>>(
+      AssetSelectionTimelineRoute(album: album, lockedSelectionAssets: albumAssets.toSet()),
     );
 
-    if (newAssets == null || newAssets.isEmpty) {
-      return;
-    }
+    // if (newAssets == null || newAssets.isEmpty) {
+    //   return;
+    // }
 
-    final added = await ref
-        .read(remoteAlbumProvider.notifier)
-        .addAssets(
-          album.id,
-          newAssets.map((asset) {
-            final remoteAsset = asset as RemoteAsset;
-            return remoteAsset.id;
-          }).toList(),
-        );
+    // final added = await ref
+    //     .read(remoteAlbumProvider.notifier)
+    //     .addAssets(
+    //       album.id,
+    //       newAssets.map((asset) {
+    //         final remoteAsset = asset as RemoteAsset;
+    //         return remoteAsset.id;
+    //       }).toList(),
+    //     );
 
-    if (added > 0) {
-      // ImmichToast.show(
-      //   context: context,
-      //   msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
-      //   toastType: ToastType.success,
-      // );
-    }
+    // if (added > 0) {
+    //   // ImmichToast.show(
+    //   //   context: context,
+    //   //   msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
+    //   //   toastType: ToastType.success,
+    //   // );
+    // }
   }
 
   Future<void> deleteAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
@@ -707,5 +710,47 @@ class AddToAlbumHeader extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Efficiently refreshes a single album from the server to get updated metadata (like thumbnailAssetId)
+/// This is much more efficient than doing a full remote sync when we only need to update one album
+Future<void> refreshSingleAlbum(WidgetRef ref, String albumId) async {
+  try {
+    // Get the API service to fetch album info directly
+    final apiService = ref.read(apiServiceProvider);
+    final albumsApi = apiService.albumsApi;
+
+    // Get the remote album repository
+    final remoteAlbumRepo = ref.read(remoteAlbumRepository);
+
+    // Fetch the updated album from the API
+    final updatedAlbumDto = await albumsApi.getAlbumInfo(albumId);
+    if (updatedAlbumDto != null) {
+      // Convert to RemoteAlbum manually (since extension is private)
+      final remoteAlbum = RemoteAlbum(
+        id: updatedAlbumDto.id,
+        name: updatedAlbumDto.albumName,
+        ownerId: updatedAlbumDto.owner.id,
+        description: updatedAlbumDto.description,
+        createdAt: updatedAlbumDto.createdAt,
+        updatedAt: updatedAlbumDto.updatedAt,
+        thumbnailAssetId: updatedAlbumDto.albumThumbnailAssetId,
+        isActivityEnabled: updatedAlbumDto.isActivityEnabled,
+        order: updatedAlbumDto.order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+        assetCount: updatedAlbumDto.assetCount,
+        ownerName: updatedAlbumDto.owner.name,
+        isShared: updatedAlbumDto.albumUsers.length > 2,
+      );
+
+      await remoteAlbumRepo.update(remoteAlbum);
+
+      // Refresh the provider state to trigger UI updates
+      await ref.read(remoteAlbumProvider.notifier).refresh();
+    }
+  } catch (e) {
+    debugPrint("Failed to refresh single album: $e");
+    // Fallback to full refresh if single album refresh fails
+    await ref.read(remoteAlbumProvider.notifier).refresh();
   }
 }

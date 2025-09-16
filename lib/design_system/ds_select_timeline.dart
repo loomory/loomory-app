@@ -264,7 +264,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       canPop: !isMultiSelectEnabled,
       onPopInvokedWithResult: (_, __) {
         if (isMultiSelectEnabled) {
-          final t = ref.read(multiSelectProvider).selectedAssets.length;
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
