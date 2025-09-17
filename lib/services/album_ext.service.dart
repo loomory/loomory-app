@@ -60,7 +60,12 @@ class AlbumExtService {
     }
   }
 
-  // Create new album and optionally provide the initial assets
+  // Create new album and optionally provide the initial assets.
+  // If there is at least one remote asset selected, it will instantly show as the cover
+  // If there are only local assets selected, we need to upload them first, then
+  // they are synced through the websocket notifications. The websocket
+  // use debounsing so first update will be immediate and then at least 5 sec apart so
+  // it will take time before all the assets are visible in the album.
   Future<void> createAlbum(String title, Set<BaseAsset> selectedAssets) async {
     final (remoteIds, localOnlyAssets) = splitRemoteLocal(selectedAssets);
 

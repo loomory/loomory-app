@@ -40,4 +40,22 @@ class LocalAssetsRepository extends DriftLocalAssetRepository {
     final allAssets = await getAllLocalAssets();
     return allAssets.where((asset) => asset.remoteId == null).toList();
   }
+
+  Future<List<LocalAsset>> getRemoteIdForAssetWithChecksum(String checksum) async {
+    final query =
+        _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.localAssetEntity.checksum.equals(checksum) & _db.remoteAssetEntity.id.isNotNull())
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
+
+    return query.map((row) {
+      final asset = row.readTable(_db.localAssetEntity).toDto();
+      return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
+    }).get();
+  }
 }

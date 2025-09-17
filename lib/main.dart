@@ -166,9 +166,8 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
     await ref.read(localNotificationService).setup();
 
     // Initialize upload listener service for automatic album addition
-    // The service will automatically connect when websocket becomes available
     try {
-      ref.read(uploadListenerServiceProvider).startListening();
+      ref.read(uploadListenerServiceProvider).start();
       debugPrint("Upload listener service initialized - will connect when websocket is ready");
     } catch (e) {
       debugPrint("Failed to initialize upload listener service: $e");
@@ -227,7 +226,6 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
   void dispose() {
     debugPrint("Shutting down");
     WidgetsBinding.instance.removeObserver(this);
-    ref.read(uploadListenerServiceProvider).stopListening();
     super.dispose();
   }
 
