@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -13,7 +12,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -23,7 +21,6 @@ import 'package:immich_mobile/utils/album_filter.utils.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 import '../../../design_system/ds_searchbar.dart';

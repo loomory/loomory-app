@@ -57,7 +57,6 @@ class AlbumExtService {
       _ref
           .read(uploadListenerServiceProvider)
           .addPendingAlbumAddition(checksum: localAsset.checksum!, albumId: album.id, albumName: album.name);
-      debugPrint("queuing local image to ${album.name}");
     }
   }
 

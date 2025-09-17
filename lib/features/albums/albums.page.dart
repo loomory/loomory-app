@@ -39,8 +39,6 @@ class AlbumsPage extends ConsumerWidget {
                 // AssetViewer requires us to set the initial asset before pushing the route and this timelineService
                 // init is async. Due to that, the complex logic below to wait for the timeline to init (thanks Claude).
 
-                // TODO, what happens with an empty album, route to add photos screen?
-
                 // Wait for the timeline service to initialize by listening to TimelineReloadEvent
                 // or checking if totalAssets > 0 (which means buckets have loaded)
                 final completer = Completer<void>();
