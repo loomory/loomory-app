@@ -33,7 +33,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
-import 'package:loomory/services/upload_listener.service.dart';
+import 'package:loomory/services/album_ext_listener.service.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -165,13 +165,13 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
     await ref.read(localNotificationService).setup();
 
-    // Initialize upload listener service for automatic album addition
-    try {
-      ref.read(uploadListenerServiceProvider).start();
-      debugPrint("Upload listener service initialized - will connect when websocket is ready");
-    } catch (e) {
-      debugPrint("Failed to initialize upload listener service: $e");
-    }
+    // // Initialize upload listener service for automatic album addition
+    // try {
+    //   ref.read(uploadListenerServiceProvider).start();
+    //   debugPrint("Upload listener service initialized - will connect when websocket is ready");
+    // } catch (e) {
+    //   debugPrint("Failed to initialize upload listener service: $e");
+    // }
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {

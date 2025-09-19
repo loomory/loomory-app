@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:loomory/features/common/asset_viewer.page.dart';
 
+import '../../providers/album_ext.provider.dart';
 import '../../routing/router.dart';
 import 'widgets/album_selector.widget.dart';
 
@@ -21,6 +22,7 @@ class AlbumsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(albumExtProvider);
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {

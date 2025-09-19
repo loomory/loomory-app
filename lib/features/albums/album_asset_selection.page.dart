@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
+import '../../providers/album_ext.provider.dart';
 import '../../repositories/local_assets.dart';
 import '../../design_system/ds_select_timeline.dart';
 import '../../services/album_ext.service.dart';
@@ -62,7 +63,8 @@ class AssetSelectionTimelinePage extends HookConsumerWidget {
                     onPressed: ref.read(multiSelectProvider).selectedAssets.isNotEmpty
                         ? () {
                             final selectedAssets = ref.read(multiSelectProvider).selectedAssets;
-                            ref.read(albumExtServiceProvider).addToAlbum(album, selectedAssets);
+                            ref.read(albumExtProvider.notifier).addToAlbum(album, selectedAssets);
+
                             context.pop();
                           }
                         : null,

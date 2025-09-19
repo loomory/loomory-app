@@ -5,11 +5,12 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
-import '../services/upload_listener.service.dart';
+import 'album_ext_listener.service.dart';
 
-// Our album creation is more complex than Immich. Immich only allows creating Albums using
-// remote assets. So, for our needs, we need to separate remote and localOnly images when
-// creating an album since we allow the user to select freely.
+// This service offers album creation and addition with both local and remote assets.
+// Immich only allows creating Albums using remote assets but we need to separate
+// remote and localOnly images when creating or adding to an album since we allow
+// the user to select images freely.
 final albumExtServiceProvider = Provider((ref) => AlbumExtService(ref));
 
 class AlbumExtService {
@@ -18,9 +19,9 @@ class AlbumExtService {
   AlbumExtService(this._ref);
 
   // Remote assets are added instantly when the album is created (supported in the API call).
-  // Local assets must be uploaded first, then our upload_listener reacts to websocket events
-  // from the server and has a list of assets pending album addition that is processed when
-  // the server notifies us that new assets have been added.
+  // Local assets must be uploaded first, then our album_ext_listener.service polls for updates
+  // for the new checksums and process pending assets album addition when the remoteId is set in
+  // the local drift database.
   (List<String>, List<LocalAsset>) splitRemoteLocal(Set<BaseAsset> selectedAssets) {
     final remoteIds = <String>[];
     final localOnlyAssets = <LocalAsset>[];
@@ -55,8 +56,13 @@ class AlbumExtService {
     // Queue local assets for album addition when their remoteIDs are available
     for (final localAsset in localOnlyAssets) {
       _ref
-          .read(uploadListenerServiceProvider)
-          .addPendingAlbumAddition(checksum: localAsset.checksum!, albumId: album.id, albumName: album.name);
+          .read(albumExtListenerServiceProvider)
+          .addPendingAlbumAddition(
+            checksum: localAsset.checksum!,
+            albumId: album.id,
+            albumName: album.name,
+            originalFileName: localAsset.name,
+          );
     }
   }
 

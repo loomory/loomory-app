@@ -1,19 +1,42 @@
 import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:logging/logging.dart';
 
 import '../repositories/local_assets.dart';
 
-/// Represents a pending album addition operation, the checksum is our key for the localAsset that we need to assign
-/// a remoteId when we have it.
+// This service polls for updates of the upload status of a LocalAsset, meaning
+// they have been assigned a remoteID and are now ready to be added to an Album.
+// It is used by:
+// 1. The companion album_ext.service which registers the pending event
+// 2. The provider in the UI level listening to updates about the upload progress.
+//    In particular for the case of an album only getting LocalAssets, we can assign the
+//    thumbnailID for the first image ready to improve UX.
+
+// Events that the service can emit to UI level Notifiers
+abstract class UploadEvent {}
+
+class AssetAddedToAlbumEvent extends UploadEvent {
+  final String assetId;
+  final String albumId;
+  final String albumName;
+
+  AssetAddedToAlbumEvent({required this.assetId, required this.albumId, required this.albumName});
+}
+
+class UploadProgressEvent extends UploadEvent {
+  final int totalPending;
+
+  UploadProgressEvent({required this.totalPending});
+}
+
+/// Represents a pending album addition operation, the checksum is our key for the localAsset
+/// that we need to assign a remoteId when we have it.
 class PendingAlbumAddition {
   final String checksum;
   final String albumId;
   final String albumName;
   final DateTime createdAt;
-  final int retryCount;
   final String? originalFileName;
 
   const PendingAlbumAddition({
@@ -21,7 +44,6 @@ class PendingAlbumAddition {
     required this.albumId,
     required this.albumName,
     required this.createdAt,
-    this.retryCount = 0,
     this.originalFileName,
   });
 
@@ -30,7 +52,6 @@ class PendingAlbumAddition {
     String? albumId,
     String? albumName,
     DateTime? createdAt,
-    int? retryCount,
     String? originalFileName,
   }) {
     return PendingAlbumAddition(
@@ -38,18 +59,16 @@ class PendingAlbumAddition {
       albumId: albumId ?? this.albumId,
       albumName: albumName ?? this.albumName,
       createdAt: createdAt ?? this.createdAt,
-      retryCount: retryCount ?? this.retryCount,
       originalFileName: originalFileName ?? this.originalFileName,
     );
   }
 
   @override
-  String toString() =>
-      'PendingAlbumAddition: checksum: ${checksum.substring(0, 8)}, album: $albumName, retries: $retryCount)';
+  String toString() => 'PendingAlbumAddition: checksum: ${checksum.substring(0, 8)}, album: $albumName)';
 }
 
-// After a websocket sync event the remoteId will be available and we match that with
-// the checksum to know when we can add an image to an album.
+// After a sync update (triggered by a websocket event in Immich) the remoteId will be available
+// and we match that with the checksum to know when we can add an image to an album.
 class SyncedAsset {
   final String remoteId;
   final String checksum;
@@ -59,15 +78,19 @@ class SyncedAsset {
 
 /// Service that listens to upload success events from Immich websocket
 /// and triggers album-specific addition of assets if needed.
-class UploadListenerService {
+class AlbumExtListenerService {
   final Ref _ref;
   final _log = Logger('UploadListenerService');
+
+  // Stream controller for events
+  final _eventController = StreamController<UploadEvent>.broadcast();
+  Stream<UploadEvent> get events => _eventController.stream;
 
   // State management for pending album additions
   final List<PendingAlbumAddition> _pendingAdditions = [];
 
   late Timer _t;
-  UploadListenerService(this._ref);
+  AlbumExtListenerService(this._ref);
 
   void start() {
     _t = Timer.periodic(Duration(seconds: 1), (_) {
@@ -103,13 +126,13 @@ class UploadListenerService {
     _log.info('Added pending album addition: $checksum -> $albumName');
   }
 
-  /// Remove a pending addition (if no longer needed)
+  /// Remove a pending addition, it has been successfully added.
   void removePendingAlbumAddition(String checksum, String albumId) {
     _pendingAdditions.removeWhere((p) => p.checksum == checksum && p.albumId == albumId);
     _log.info('Removed pending addition for checksum ${checksum.substring(0, 8)}... to album $albumId');
   }
 
-  /// Clear old pending additions (older than specified duration)
+  /// Clear old pending additions, in theory this should never happen
   void cleanupOldPendingAdditions({Duration maxAge = const Duration(hours: 24)}) {
     final cutoff = DateTime.now().subtract(maxAge);
     final removed = _pendingAdditions.where((p) => p.createdAt.isBefore(cutoff)).toList();
@@ -117,7 +140,7 @@ class UploadListenerService {
     _pendingAdditions.removeWhere((p) => p.createdAt.isBefore(cutoff));
 
     if (removed.isNotEmpty) {
-      _log.info('Cleaned up ${removed.length} old pending additions');
+      _log.warning('Cleaned up ${removed.length} old pending additions');
     }
   }
 
@@ -126,7 +149,7 @@ class UploadListenerService {
       return;
     }
 
-    // Map of albumId and list of assets we have found the remoteId for by now
+    // Map of albumId to list of assets we have found the remoteId for by now
     final readyToAdd = <String, List<SyncedAsset>>{};
 
     for (final pa in _pendingAdditions) {
@@ -160,28 +183,43 @@ class UploadListenerService {
         }
         _log.info('Successfully added $result assets to album $albumId ($remoteIds)');
 
+        // Emit events for each asset added
         final checksums = readyToAdd[albumId]?.map((e) => e.checksum).toList() ?? [];
         for (final checksum in checksums) {
+          final pendingItem = _pendingAdditions.firstWhere((p) => p.checksum == checksum);
+          final syncedAsset = readyToAdd[albumId]!.firstWhere((s) => s.checksum == checksum);
+
+          _eventController.add(
+            AssetAddedToAlbumEvent(assetId: syncedAsset.remoteId, albumId: albumId, albumName: pendingItem.albumName),
+          );
+
           removePendingAlbumAddition(checksum, albumId);
         }
+
+        // Emit progress event
+        _eventController.add(UploadProgressEvent(totalPending: _pendingAdditions.length));
       } catch (e) {
         final errorMsg = e.toString();
-        _log.severe('Unexpected error adding asset assets to album $albumId: $errorMsg');
-        rethrow;
+        _log.severe('Unexpected error adding assets to album $albumId: $errorMsg');
+        // Continue processing other albums
+        continue;
       }
     }
+
+    cleanupOldPendingAdditions();
   }
 
   void dispose() {
     _t.cancel();
+    _eventController.close();
   }
 }
 
-final uploadListenerServiceProvider = Provider<UploadListenerService>((ref) {
-  final service = UploadListenerService(ref);
+final albumExtListenerServiceProvider = Provider<AlbumExtListenerService>((ref) {
+  final service = AlbumExtListenerService(ref);
 
   // Add debug logging to track service lifecycle
-  final log = Logger('UploadListenerProvider');
+  final log = Logger('AlbumExtProvider');
   log.info('Upload listener service created');
 
   ref.onDispose(() {

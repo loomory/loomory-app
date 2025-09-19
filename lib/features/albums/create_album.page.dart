@@ -14,6 +14,7 @@ import 'package:loomory/design_system/ds_input_field.dart';
 import '../../design_system/ds_select_timeline.dart';
 import '../../services/album_ext.service.dart';
 import '../../repositories/local_assets.dart';
+import '../../providers/album_ext.provider.dart';
 
 @RoutePage()
 class CreateAlbumPage extends HookConsumerWidget {
@@ -63,8 +64,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                         ? () {
                             final selectedAssets = ref.read(multiSelectProvider).selectedAssets;
                             ref
-                                .read(albumExtServiceProvider)
+                                .read(albumExtProvider.notifier)
                                 .createAlbum(albumTitleController.value.text, selectedAssets);
+
                             context.pop();
                           }
                         : null,
