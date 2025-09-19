@@ -13,7 +13,6 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import '../../providers/album_ext.provider.dart';
 import '../../repositories/local_assets.dart';
 import '../../design_system/ds_select_timeline.dart';
-import '../../services/album_ext.service.dart';
 
 // Adding photos to existing Album.
 @RoutePage()

@@ -10,9 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -33,7 +31,6 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
-import 'package:loomory/services/album_ext_listener.service.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -164,14 +161,6 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
     await ref.read(localNotificationService).setup();
-
-    // // Initialize upload listener service for automatic album addition
-    // try {
-    //   ref.read(uploadListenerServiceProvider).start();
-    //   debugPrint("Upload listener service initialized - will connect when websocket is ready");
-    // } catch (e) {
-    //   debugPrint("Failed to initialize upload listener service: $e");
-    // }
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
