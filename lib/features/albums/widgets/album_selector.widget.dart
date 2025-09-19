@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
+import 'package:loomory/design_system/ds_album_card.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -434,102 +435,58 @@ class _GridAlbumCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
+    return DSAlbumCard(
+      album: album,
       onTap: () => onAlbumSelected(album),
-      child: Card(
-        elevation: 0,
-        color: context.colorScheme.surfaceBright,
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-          side: BorderSide(color: context.colorScheme.onSurface.withAlpha(25), width: 1),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-          child: Stack(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: album.thumbnailAssetId != null
-                    ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
-                    : Container(
-                        color: Colors.grey,
-                        child: Center(child: const Icon(Icons.photo_album_rounded, size: 100, color: Colors.white)),
-                      ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    '${album.name[0].toUpperCase()}${album.name.substring(1)}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  onPressed: () async {
-                    await showCupertinoModalPopup<String>(
-                      context: context,
-                      builder: (context) => CupertinoActionSheet(
-                        title: Text(
-                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-                          '${album.name[0].toUpperCase()}${album.name.substring(1)}',
-                        ),
-                        actions: [
-                          CupertinoActionSheetAction(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
+      onMenuTap: () async {
+        await showCupertinoModalPopup<String>(
+          context: context,
+          builder: (context) => CupertinoActionSheet(
+            title: Text(
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+              '${album.name[0].toUpperCase()}${album.name.substring(1)}',
+            ),
+            actions: [
+              CupertinoActionSheetAction(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(album.id);
 
-                              final _ = await context.pushRoute<Set<BaseAsset>>(
-                                AssetSelectionTimelineRoute(album: album, lockedSelectionAssets: albumAssets.toSet()),
-                              );
-                              await ref.read(remoteAlbumProvider.notifier).refresh();
-                            },
-                            child: Text("Add photos to album"),
-                          ),
-                          CupertinoActionSheetAction(
-                            onPressed: () => {
-                              Navigator.pop(context),
+                  final _ = await context.pushRoute<Set<BaseAsset>>(
+                    AssetSelectionTimelineRoute(album: album, lockedSelectionAssets: albumAssets.toSet()),
+                  );
+                  await ref.read(remoteAlbumProvider.notifier).refresh();
+                },
+                child: Text("Add photos to album"),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () => {
+                  Navigator.pop(context),
 
-                              // TODO route to invites
-                            },
-                            child: Text("Invite collaborators"),
-                          ),
-                          CupertinoActionSheetAction(
-                            onPressed: () => {
-                              Navigator.pop(context),
-                              // create link
-                            },
-                            child: Text("Create sharing link"),
-                          ),
-                          CupertinoActionSheetAction(
-                            isDestructiveAction: true,
-                            onPressed: () async {
-                              await deleteAlbum(context, ref, album);
-                              Navigator.pop(context);
-                            },
-                            child: Text("Delete album"),
-                          ),
-                        ],
-                        cancelButton: CupertinoActionSheetAction(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text("Cancel"),
-                        ),
-                      ),
-                    );
-                  },
-                  icon: Icon(color: Colors.white, Icons.more_vert_sharp),
-                ),
+                  // TODO route to invites
+                },
+                child: Text("Invite collaborators"),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () => {
+                  Navigator.pop(context),
+                  // create link
+                },
+                child: Text("Create sharing link"),
+              ),
+              CupertinoActionSheetAction(
+                isDestructiveAction: true,
+                onPressed: () async {
+                  await deleteAlbum(context, ref, album);
+                  Navigator.pop(context);
+                },
+                child: Text("Delete album"),
               ),
             ],
+            cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

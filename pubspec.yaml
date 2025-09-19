@@ -40,6 +40,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   timezone: ^0.9.4
   worker_manager: ^7.2.3
+  font_awesome_flutter: ^10.9.1
 
 # Check immich_mobile versions from time to time for dev_dependency versions
 dev_dependencies:
