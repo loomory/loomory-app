@@ -85,7 +85,10 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       ),
       NavigationDestination(
         label: 'add'.tr(),
-        icon: const Icon(Icons.add),
+        icon: CircleAvatar(
+          backgroundColor: context.primaryColor,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
         selectedIcon: Icon(Icons.add, color: context.primaryColor),
       ),
       NavigationDestination(

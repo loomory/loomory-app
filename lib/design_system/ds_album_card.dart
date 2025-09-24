@@ -47,17 +47,17 @@ class DSAlbumCard extends StatelessWidget {
                       top: 16,
                       right: 16,
                       child: Container(
-                        width: 30,
-                        height: 30,
+                        width: 38,
+                        height: 32,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
                           ],
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.more_vert, color: Colors.black54, size: 20),
+                          icon: const Icon(Icons.more_horiz, color: Colors.black54, size: 20),
                           onPressed: onMenuTap,
                           padding: EdgeInsets.zero,
                         ),
