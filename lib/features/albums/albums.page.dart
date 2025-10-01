@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:loomory/features/common/asset_viewer.page.dart';
+import 'package:loomory/features/album_access/album_access.provider.dart';
 
 import '../../providers/album_ext.provider.dart';
 import '../../routing/router.dart';
@@ -23,6 +24,7 @@ class AlbumsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(albumExtProvider);
+    final albumAccessRequests = ref.watch(albumAccessProvider);
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {

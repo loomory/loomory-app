@@ -169,6 +169,16 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
+    if (deepLink.uri.scheme == "loomory") {
+      debugPrint("got loomory with ${deepLink.uri.queryParameters}");
+      PageRouteInfo route = RequestAlbumAccessRoute(
+        albumId: deepLink.uri.queryParameters['album_id']!,
+        albumName: deepLink.uri.queryParameters['album_name']!,
+        ownerId: deepLink.uri.queryParameters['user_id']!,
+      );
+      return DeepLink([route]);
+    }
+
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 

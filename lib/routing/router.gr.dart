@@ -293,6 +293,65 @@ class PlaceholderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RequestAlbumAccessPage]
+class RequestAlbumAccessRoute
+    extends PageRouteInfo<RequestAlbumAccessRouteArgs> {
+  RequestAlbumAccessRoute({
+    Key? key,
+    required String albumId,
+    required String albumName,
+    required String ownerId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         RequestAlbumAccessRoute.name,
+         args: RequestAlbumAccessRouteArgs(
+           key: key,
+           albumId: albumId,
+           albumName: albumName,
+           ownerId: ownerId,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'RequestAlbumAccessRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RequestAlbumAccessRouteArgs>();
+      return RequestAlbumAccessPage(
+        key: args.key,
+        albumId: args.albumId,
+        albumName: args.albumName,
+        ownerId: args.ownerId,
+      );
+    },
+  );
+}
+
+class RequestAlbumAccessRouteArgs {
+  const RequestAlbumAccessRouteArgs({
+    this.key,
+    required this.albumId,
+    required this.albumName,
+    required this.ownerId,
+  });
+
+  final Key? key;
+
+  final String albumId;
+
+  final String albumName;
+
+  final String ownerId;
+
+  @override
+  String toString() {
+    return 'RequestAlbumAccessRouteArgs{key: $key, albumId: $albumId, albumName: $albumName, ownerId: $ownerId}';
+  }
+}
+
+/// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<void> {
   const SplashScreenRoute({List<PageRouteInfo>? children})

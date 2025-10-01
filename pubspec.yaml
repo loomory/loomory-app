@@ -24,6 +24,7 @@ dependencies:
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
   easy_localization: ^3.0.7+1
+  http: ^1.3.0
   intl: ^0.20.0
   hooks_riverpod: ^2.6.1
   logging: ^1.3.0
@@ -37,6 +38,7 @@ dependencies:
   # Otherwise we get Unable to find a specification for `share_handler_ios_models` depended upon by `share_handler_ios`
   # because of transitive dependency in packages/immich with no support in our Podfile for loomery
   share_handler: ^0.0.22  
+  share_plus: ^10.1.4
   riverpod_annotation: ^2.6.1
   timezone: ^0.9.4
   worker_manager: ^7.2.3

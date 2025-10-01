@@ -19,9 +19,11 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:loomory/design_system/ds_album_card.dart';
+import 'package:loomory/features/album_access/album_access.provider.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 import '../../../design_system/ds_searchbar.dart';
@@ -457,31 +459,28 @@ class _GridAlbumCard extends ConsumerWidget {
                   );
                   await ref.read(remoteAlbumProvider.notifier).refresh();
                 },
-                child: Text("Add photos to album"),
+                child: Text("Add photos"),
               ),
-              CupertinoActionSheetAction(
-                onPressed: () => {
-                  Navigator.pop(context),
-
-                  // TODO route to invites
-                },
-                child: Text("Invite collaborators"),
-              ),
-              CupertinoActionSheetAction(
-                onPressed: () => {
-                  Navigator.pop(context),
-                  // create link
-                },
-                child: Text("Create sharing link"),
-              ),
-              CupertinoActionSheetAction(
-                isDestructiveAction: true,
-                onPressed: () async {
-                  await deleteAlbum(context, ref, album);
-                  Navigator.pop(context);
-                },
-                child: Text("Delete album"),
-              ),
+              if (album.ownerId == ref.read(currentUserProvider)?.id)
+                CupertinoActionSheetAction(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    final shareLink = ref
+                        .read(albumAccessProvider.notifier)
+                        .createRequestAccessLink(album.id, album.name);
+                    Share.share(shareLink, subject: "Join my album ${album.name} on Loomory!");
+                  },
+                  child: Text("Invite"),
+                ),
+              if (album.ownerId == ref.read(currentUserProvider)?.id)
+                CupertinoActionSheetAction(
+                  isDestructiveAction: true,
+                  onPressed: () async {
+                    await deleteAlbum(context, ref, album);
+                    Navigator.pop(context);
+                  },
+                  child: Text("Delete album"),
+                ),
             ],
             cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
           ),
