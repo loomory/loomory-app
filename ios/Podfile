@@ -39,10 +39,6 @@ target 'Runner' do
     pod "share_handler_ios_models", :path => ".symlinks/plugins/share_handler_ios/ios/Models"
   end
   # share_handler addition end
-
-  target 'RunnerTests' do
-    inherit! :search_paths
-  end
 end
 
 post_install do |installer|
@@ -56,6 +52,7 @@ post_install do |installer|
   
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
      # Permission macros for the permission_handler (https://pub.dev/packages/permission_handler)
     # Start of the permission_handler configuration
     # Remove the # character in front of the permission you do want to use.

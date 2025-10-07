@@ -7,24 +7,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/migration.dart';
-import 'package:logging/logging.dart';
-import 'package:loomory/routing/router.dart';
-import 'package:loomory/features/add_options/add_options_bottom_sheet.dart';
+//import 'package:immich_mobile/routing/router.dart';
 
 import '../../repositories/local_assets.dart';
+import '../../routing/router.dart';
+import '../add_options/add_options_bottom_sheet.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -35,48 +31,29 @@ class TabShellPage extends ConsumerStatefulWidget {
 }
 
 class _TabShellPageState extends ConsumerState<TabShellPage> {
-  final Logger _log = Logger('TabShellPageState');
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(websocketProvider.notifier).connect();
-
-      final isEnableBackup = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-      await runNewSync(ref, full: true).then((_) async {
-        if (isEnableBackup) {
-          final currentUser = ref.read(currentUserProvider);
-          if (currentUser == null) {
-            return;
-          }
-
-          await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    // TODO: Review this, it should perhaps be somewhere else?
+    // This is what we use to refresh local assets when coming to foreground but maybe the invalidate logic
+    // should be somewhere else, not in the tab_shell?
     ref.listen<SyncStatusState>(syncStatusProvider, (previous, next) {
       if (previous?.localSyncStatus != next.localSyncStatus) {
         if (next.localSyncStatus == SyncStatus.success) {
-          _log.info("Local sync completed! Invalidating allAssetsProvider to get access to latests assets");
+          debugPrint("Local sync completed! Invalidating allAssetsProvider to get access to latests assets");
           ref.invalidate(allAssetsProvider);
         } else if (next.localSyncStatus == SyncStatus.error) {
-          _log.warning("Local sync failed: ${next.errorMessage}");
+          debugPrint("Local sync failed: ${next.errorMessage}");
         }
       }
     });
     final isScreenLandscape = context.orientation == Orientation.landscape;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
         icon: const Icon(Icons.house),
-        selectedIcon: Icon(Icons.house, color: context.primaryColor),
+        selectedIcon: Icon(Icons.photo_library, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'search'.tr(),
@@ -95,11 +72,13 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         label: 'albums'.tr(),
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
         label: 'library'.tr(),
         icon: const Icon(Icons.space_dashboard_outlined),
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
     ];
 
