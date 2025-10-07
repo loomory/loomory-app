@@ -35,6 +35,7 @@ import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 import 'constants/locales.dart';
+import 'features/album_access/album_access.provider.dart';
 import 'theme/theme_data.dart';
 import 'routing/router.dart';
 
@@ -124,6 +125,7 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
+        ref.invalidate(albumAccessProvider);
         break;
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
@@ -169,8 +171,8 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
-    if (deepLink.uri.scheme == "loomory") {
-      debugPrint("got loomory with ${deepLink.uri.queryParameters}");
+    debugPrint("got deeplink $deepLink");
+    if (deepLink.path == '/dl/raa') {
       PageRouteInfo route = RequestAlbumAccessRoute(
         albumId: deepLink.uri.queryParameters['album_id']!,
         albumName: deepLink.uri.queryParameters['album_name']!,
@@ -179,6 +181,7 @@ class LoomoryAppState extends ConsumerState<LoomoryApp> with WidgetsBindingObser
       return DeepLink([route]);
     }
 
+    // TODO revise how immich deeplinks to albums and photos if needed.
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 

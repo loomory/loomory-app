@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:loomory/domain/album_access.dart';
 
 import 'request_album_access.provider.dart';
@@ -18,12 +19,13 @@ class RequestAlbumAccessPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final requestState = ref.watch(requestAlbumAccessProvider);
 
-    final nameController = useTextEditingController();
+    final nameController = useTextEditingController(text: ref.read(currentUserProvider)?.name);
+    final messageController = useTextEditingController();
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Request Access'),
+        title: const Text('Album Access'),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
@@ -52,7 +54,9 @@ class RequestAlbumAccessPage extends HookConsumerWidget {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
-                  ref.read(requestAlbumAccessProvider.notifier).requestAlbumAccess(ownerId, albumId);
+                  ref
+                      .read(requestAlbumAccessProvider.notifier)
+                      .requestAlbumAccess(ownerId, albumId, nameController.text, messageController.text);
                 },
                 child: const Text('Try Again'),
               ),
@@ -71,18 +75,21 @@ class RequestAlbumAccessPage extends HookConsumerWidget {
                   children: [
                     const SizedBox(height: 24),
                     Text(
-                      'Request access to $albumName',
+                      'Request access to:',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 4),
                     Text(
-                      'Your name',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+                      '"$albumName"',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 32),
                     TextFormField(
                       controller: nameController,
-                      decoration: const InputDecoration(hintText: 'Enter your name', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(hintText: 'Your name', border: OutlineInputBorder()),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please enter your name';
@@ -90,13 +97,21 @@ class RequestAlbumAccessPage extends HookConsumerWidget {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: messageController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(hintText: 'Message (optional)', border: OutlineInputBorder()),
+                    ),
                     const Spacer(),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
                           if (formKey.currentState?.validate() ?? false) {
-                            ref.read(requestAlbumAccessProvider.notifier).requestAlbumAccess(ownerId, albumId);
+                            ref
+                                .read(requestAlbumAccessProvider.notifier)
+                                .requestAlbumAccess(ownerId, albumId, nameController.text, messageController.text);
                           }
                         },
                         style: ElevatedButton.styleFrom(

@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:loomory/features/common/asset_viewer.page.dart';
 import 'package:loomory/features/album_access/album_access.provider.dart';
 
+import '../../design_system/ds_large_card.dart';
 import '../../providers/album_ext.provider.dart';
 import '../../routing/router.dart';
 import 'widgets/album_selector.widget.dart';
@@ -24,17 +25,29 @@ class AlbumsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(albumExtProvider);
-    final albumAccessRequests = ref.watch(albumAccessProvider);
+    final albumAccessRequests = ref.watch(nonBlockedAlbumAccessProvider).value ?? [];
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
           await ref.read(backgroundSyncProvider).syncRemote();
           await ref.read(remoteAlbumProvider.notifier).refresh();
-          // Not sure if this refresh does much, maybe we need to do the remoteSync if this is really needed here?
+          ref.invalidate(albumAccessProvider);
         },
         edgeOffset: 100,
         child: CustomScrollView(
           slivers: [
+            if (albumAccessRequests.isNotEmpty)
+              SliverToBoxAdapter(
+                child: DSLargeCard(
+                  title: "Pending request",
+                  body: 'You have pending album request',
+                  buttonText: 'Review',
+                  onButtonPressed: () {
+                    context.pushRoute(const AlbumAccessRoute());
+                  },
+                ),
+              ),
+
             AlbumSelector(
               onAlbumSelected: (album) async {
                 ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
