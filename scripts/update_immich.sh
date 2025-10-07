@@ -26,9 +26,9 @@ git fetch
 git checkout "$version"
 cd -
 
-git add packages/immich
-git commit -m "chore: update immich to $version"
-git push origin main
+# git add packages/immich
+# git commit -m "chore: update immich to $version"
+# git push origin main
 
 
 # Update root pubspec.yaml version to match Immich Mobile
@@ -46,5 +46,8 @@ fi
 
 echo "Immich submodule updated to $version."
 echo "After pulling, other users must run: git submodule update --init packages/immich"
-echo "pubspec.yaml updated to $version. Do remember to review version breaking changes in copied files."
+echo "pubspec.yaml updated to $version." 
+echo "Remember to review version breaking changes in copied files."
+echo "Remember to review native file (swift and kt)"
+echo "Now create a branch for this update and verify that all is solved before merging to main" 
 

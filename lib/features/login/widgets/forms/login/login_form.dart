@@ -10,18 +10,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
+import 'package:immich_mobile/widgets/common/immich_logo.dart';
+import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/forms/login/email_input.dart';
 import 'package:immich_mobile/widgets/forms/login/loading_icon.dart';
@@ -160,6 +164,18 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
+    Future<void> handleSyncFlow() async {
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
+      await backgroundManager.syncLocal(full: true);
+      await backgroundManager.syncRemote();
+      await backgroundManager.hashAssets();
+
+      if (Store.get(StoreKey.syncAlbums, false)) {
+        await backgroundManager.syncLinkedAlbum();
+      }
+    }
+
     login() async {
       TextInput.finishAutofillContext();
 
@@ -177,6 +193,8 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+            handleSyncFlow();
+            ref.read(websocketProvider.notifier).connect();
             context.replaceRoute(const TabShellRoute());
             return;
           }
@@ -274,7 +292,7 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              await runNewSync(ref);
+              handleSyncFlow();
               context.replaceRoute(const TabShellRoute());
               return;
             }

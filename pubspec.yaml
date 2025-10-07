@@ -3,10 +3,11 @@ name: loomory
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.141.1+3013
+version: 2.0.1+3021
 
 environment:
-  sdk: ^3.8.1
+  sdk: '>=3.8.0 <4.0.0'
+  flutter: 3.35.5
 
 # Rely on transitive dependencies from immich_mobile for everything
 dependencies:
@@ -15,7 +16,7 @@ dependencies:
   immich_mobile:
     path: ./packages/immich/mobile
   auto_route: ^9.2.0
-  background_downloader: ^9.2.0
+  background_downloader: ^9.2.5
   cupertino_icons: ^1.0.8
   device_info_plus: ^11.3.3
   # DB

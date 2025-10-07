@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'segment/insta_segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -35,27 +36,30 @@ class InstaTimeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.showStorageIndicator,
+    this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(),
+    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.23),
     this.groupBy,
     this.withScrubber = true,
+    this.snapToMonth = true,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-  final bool? showStorageIndicator;
+  final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withStack;
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
+  final bool snapToMonth;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
         builder: (_, constraints) => ProviderScope(
           overrides: [
