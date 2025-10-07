@@ -27,6 +27,22 @@ class AddPhotosRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AlbumAccessPage]
+class AlbumAccessRoute extends PageRouteInfo<void> {
+  const AlbumAccessRoute({List<PageRouteInfo>? children})
+    : super(AlbumAccessRoute.name, initialChildren: children);
+
+  static const String name = 'AlbumAccessRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AlbumAccessPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AlbumsPage]
 class AlbumsRoute extends PageRouteInfo<void> {
   const AlbumsRoute({List<PageRouteInfo>? children})

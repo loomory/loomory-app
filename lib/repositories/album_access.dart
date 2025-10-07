@@ -41,6 +41,36 @@ class AlbumAccessRepository {
       return AlbumAccessRequestResult.error;
     }
   }
+
+  Future<AlbumAccessRequestResult> deleteAlbumAccessRequest(AlbumAccess accessRequest) async {
+    final uri = Uri.parse(
+      '$apiUrl?user_id=${accessRequest.userId}&album_id=${accessRequest.albumId}&requestor_id=${accessRequest.requestorId}',
+    );
+    final response = await http.delete(uri);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return AlbumAccessRequestResult.success;
+    } else if (response.statusCode == 403) {
+      return AlbumAccessRequestResult.blocked;
+    } else {
+      return AlbumAccessRequestResult.error;
+    }
+  }
+
+  Future<AlbumAccessRequestResult> blockAlbumAccessRequest(AlbumAccess accessRequest) async {
+    final body = jsonEncode({'blocked': true});
+    final uri = Uri.parse(
+      '$apiUrl?user_id=${accessRequest.userId}&album_id=${accessRequest.albumId}&requestor_id=${accessRequest.requestorId}',
+    );
+    final response = await http.patch(uri, body: body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return AlbumAccessRequestResult.success;
+    } else if (response.statusCode == 403) {
+      return AlbumAccessRequestResult.blocked;
+    } else {
+      return AlbumAccessRequestResult.error;
+    }
+  }
 }
 
 final albumAccessRepository = Provider<AlbumAccessRepository>((ref) => AlbumAccessRepository());

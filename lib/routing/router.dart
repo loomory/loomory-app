@@ -28,6 +28,7 @@ import '../features/albums/albums.page.dart';
 import '../features/albums/album_asset_selection.page.dart';
 import '../features/albums/create_album.page.dart';
 import '../features/album_access/request_album_access.page.dart';
+import '../features/album_access/album_access.page.dart';
 
 // This is old timeline and must be removed when beta timeline can be selected from the start
 import '../features/legacy/tab_controller.page.dart';
@@ -241,7 +242,9 @@ class AppRouter extends RootStackRouter {
     // AutoRoute(page: DriftRecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftLocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: CreateAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: AlbumAccessRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: RequestAlbumAccessRoute.page, guards: [_authGuard, _duplicateGuard]),
+
     // AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftPlaceDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     // AutoRoute(page: DriftUserSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),

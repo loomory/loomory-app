@@ -16,13 +16,21 @@ class RequestAlbumAccessNotifier extends AsyncNotifier<AlbumAccessRequestResult?
     return null;
   }
 
-  void requestAlbumAccess(String ownerId, String albumId) async {
+  void requestAlbumAccess(String ownerId, String albumId, String requestorName, String requestorMessage) async {
     final currentUser = ref.read(currentUserProvider);
     if (currentUser != null) {
       state = AsyncValue.loading();
       final res = await ref
           .read(albumAccessRepository)
-          .requestAlbumAccess(AlbumAccess(ownerId, currentUser.id, albumId));
+          .requestAlbumAccess(
+            AlbumAccess(
+              userId: ownerId,
+              albumId: albumId,
+              requestorId: currentUser.id,
+              requestorName: requestorName,
+              requestorMessage: requestorMessage,
+            ),
+          );
       switch (res) {
         case AlbumAccessRequestResult.success:
           state = AsyncValue.data(res);
