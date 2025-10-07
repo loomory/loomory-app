@@ -59,21 +59,6 @@ class AddOptionsBottomSheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 _AddOptionTile(
-                  icon: Icons.group_add_outlined,
-                  title: 'join_album_title'.tr(),
-                  description: 'join_album_description'.tr(),
-                  backgroundColor: Colors.green.withOpacity(0.1),
-                  iconColor: Colors.green,
-                  onTap: () {
-                    context.pop();
-                    // TODO: Implement join album
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('Join album - Coming soon!')));
-                  },
-                ),
-                const SizedBox(height: 16),
-                _AddOptionTile(
                   icon: Icons.event_outlined,
                   title: 'create_event_title'.tr(),
                   description: 'create_event_description'.tr(),
