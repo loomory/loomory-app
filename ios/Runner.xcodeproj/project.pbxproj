@@ -19,6 +19,11 @@
 		4AB5AEF12E61EF1A00B82C6F /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB5AEED2E61EF1A00B82C6F /* ThumbnailsImpl.swift */; };
 		4AD60FCA2E9540FB0060EB0C /* PHAssetResourceExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD60FC92E9540FB0060EB0C /* PHAssetResourceExtensions.swift */; };
 		4AD60FCB2E9540FB0060EB0C /* PHAssetExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD60FC82E9540FB0060EB0C /* PHAssetExtensions.swift */; };
+		4AD610082E96AC590060EB0C /* BackgroundServicePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD610052E96AC590060EB0C /* BackgroundServicePlugin.swift */; };
+		4AD610092E96AC590060EB0C /* BackgroundSyncWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD610062E96AC590060EB0C /* BackgroundSyncWorker.swift */; };
+		4AD6101C2E96ADBF0060EB0C /* BackgroundWorkerApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD6101A2E96ADBF0060EB0C /* BackgroundWorkerApiImpl.swift */; };
+		4AD6101D2E96ADBF0060EB0C /* BackgroundWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD610182E96ADBF0060EB0C /* BackgroundWorker.swift */; };
+		4AD6101E2E96ADBF0060EB0C /* BackgroundWorker.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD610192E96ADBF0060EB0C /* BackgroundWorker.g.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -85,6 +90,11 @@
 		4AB5AEED2E61EF1A00B82C6F /* ThumbnailsImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailsImpl.swift; sourceTree = "<group>"; };
 		4AD60FC82E9540FB0060EB0C /* PHAssetExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHAssetExtensions.swift; sourceTree = "<group>"; };
 		4AD60FC92E9540FB0060EB0C /* PHAssetResourceExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHAssetResourceExtensions.swift; sourceTree = "<group>"; };
+		4AD610052E96AC590060EB0C /* BackgroundServicePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundServicePlugin.swift; sourceTree = "<group>"; };
+		4AD610062E96AC590060EB0C /* BackgroundSyncWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSyncWorker.swift; sourceTree = "<group>"; };
+		4AD610182E96ADBF0060EB0C /* BackgroundWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.swift; sourceTree = "<group>"; };
+		4AD610192E96ADBF0060EB0C /* BackgroundWorker.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.g.swift; sourceTree = "<group>"; };
+		4AD6101A2E96ADBF0060EB0C /* BackgroundWorkerApiImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorkerApiImpl.swift; sourceTree = "<group>"; };
 		62A257F9F867E45C4099ACEC /* Pods-ShareExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShareExtension.release.xcconfig"; path = "Target Support Files/Pods-ShareExtension/Pods-ShareExtension.release.xcconfig"; sourceTree = "<group>"; };
 		64F171C4D3BC26FA54A00C0C /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -174,6 +184,27 @@
 			path = ../packages/immich/mobile/ios/Runner/Images;
 			sourceTree = SOURCE_ROOT;
 		};
+		4AD610072E96AC590060EB0C /* BackgroundSync */ = {
+			isa = PBXGroup;
+			children = (
+				4AD610052E96AC590060EB0C /* BackgroundServicePlugin.swift */,
+				4AD610062E96AC590060EB0C /* BackgroundSyncWorker.swift */,
+			);
+			name = BackgroundSync;
+			path = ../packages/immich/mobile/ios/Runner/BackgroundSync;
+			sourceTree = SOURCE_ROOT;
+		};
+		4AD6101B2E96ADBF0060EB0C /* Background */ = {
+			isa = PBXGroup;
+			children = (
+				4AD610182E96ADBF0060EB0C /* BackgroundWorker.swift */,
+				4AD610192E96ADBF0060EB0C /* BackgroundWorker.g.swift */,
+				4AD6101A2E96ADBF0060EB0C /* BackgroundWorkerApiImpl.swift */,
+			);
+			name = Background;
+			path = ../packages/immich/mobile/ios/Runner/Background;
+			sourceTree = SOURCE_ROOT;
+		};
 		83A2FD0F97A474BA4C3B1062 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -224,6 +255,8 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				4AD6101B2E96ADBF0060EB0C /* Background */,
+				4AD610072E96AC590060EB0C /* BackgroundSync */,
 				4AB5AEEE2E61EF1A00B82C6F /* Images */,
 				4AB5AD062E58BFFE00B82C6F /* Sync */,
 				4AA3E2642E4BA41C00061470 /* Runner.entitlements */,
@@ -523,11 +556,16 @@
 				4AB5AEEF2E61EF1A00B82C6F /* Thumbhash.swift in Sources */,
 				4AB5AEF02E61EF1A00B82C6F /* Thumbnails.g.swift in Sources */,
 				4AB5AEF12E61EF1A00B82C6F /* ThumbnailsImpl.swift in Sources */,
+				4AD610082E96AC590060EB0C /* BackgroundServicePlugin.swift in Sources */,
+				4AD610092E96AC590060EB0C /* BackgroundSyncWorker.swift in Sources */,
 				4AD60FCA2E9540FB0060EB0C /* PHAssetResourceExtensions.swift in Sources */,
 				4AD60FCB2E9540FB0060EB0C /* PHAssetExtensions.swift in Sources */,
 				4AB5AD072E58BFFE00B82C6F /* Messages.g.swift in Sources */,
 				4AB5AD082E58BFFE00B82C6F /* MessagesImpl.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				4AD6101C2E96ADBF0060EB0C /* BackgroundWorkerApiImpl.swift in Sources */,
+				4AD6101D2E96ADBF0060EB0C /* BackgroundWorker.swift in Sources */,
+				4AD6101E2E96ADBF0060EB0C /* BackgroundWorker.g.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
