@@ -3,9 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'album_ext_listener.service.dart';
+import 'manual_hash.service.dart';
 
 // This service offers album creation and addition with both local and remote assets.
 // Immich only allows creating Albums using remote assets but we need to separate
@@ -36,11 +38,7 @@ class AlbumExtService {
           debugPrint("Error: can't process $asset unexpected or incorrect.");
         }
       } else {
-        if (asset.checksum != null) {
-          localOnlyAssets.add(asset as LocalAsset);
-        } else {
-          debugPrint("Error: can't process $asset");
-        }
+        localOnlyAssets.add(asset as LocalAsset);
       }
     }
     return (remoteIds, localOnlyAssets);
@@ -50,11 +48,30 @@ class AlbumExtService {
   Future<void> addLocalOnlyAssets(RemoteAlbum album, List<LocalAsset> localOnlyAssets) async {
     _ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
 
+    // LocalAssets that already have checksums are fine. this could happen if we for instance
+    // auto backup the favorites local album in the future.
+    final updatedLocalAssets = localOnlyAssets.where((asset) => asset.checksum != null).toList();
+
+    // Otherwise LocalAssets will not have checksums so we need to calculate them
+    final localAssetsWithoutChecksum = localOnlyAssets.where((asset) => asset.checksum == null).toList();
+    debugPrint("hashing ${localAssetsWithoutChecksum.length} localAssets without checksum");
+    await _ref.read(manualHashServiceProvider).hashAssets(localAssetsWithoutChecksum);
+
+    // Now get the updated localAssets with the checksums just hashed
+    for (final localAsset in localAssetsWithoutChecksum) {
+      final updatedAsset = await _ref.read(assetServiceProvider).getAsset(localAsset) as LocalAsset?;
+      if (updatedAsset != null) {
+        updatedLocalAssets.add(updatedAsset);
+      } else {
+        debugPrint("Error: Failed to find updated local asset with checksum");
+      }
+    }
+
     // Upload local assets
-    await _ref.read(uploadServiceProvider).manualBackup(localOnlyAssets);
+    await _ref.read(uploadServiceProvider).manualBackup(updatedLocalAssets);
 
     // Queue local assets for album addition when their remoteIDs are available
-    for (final localAsset in localOnlyAssets) {
+    for (final localAsset in updatedLocalAssets) {
       _ref
           .read(albumExtListenerServiceProvider)
           .addPendingAlbumAddition(
