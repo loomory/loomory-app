@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -6,6 +5,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:logging/logging.dart';
 import 'album_ext_listener.service.dart';
 import 'manual_hash.service.dart';
 
@@ -17,6 +17,7 @@ final albumExtServiceProvider = Provider((ref) => AlbumExtService(ref));
 
 class AlbumExtService {
   final Ref _ref;
+  final Logger _log = Logger('AlbumExtService');
 
   AlbumExtService(this._ref);
 
@@ -35,7 +36,7 @@ class AlbumExtService {
         } else if (asset is RemoteAsset) {
           remoteIds.add(asset.id);
         } else {
-          debugPrint("Error: can't process $asset unexpected or incorrect.");
+          _log.severe("Error: can't process $asset unexpected or incorrect.");
         }
       } else {
         localOnlyAssets.add(asset as LocalAsset);
@@ -54,7 +55,7 @@ class AlbumExtService {
 
     // Otherwise LocalAssets will not have checksums so we need to calculate them
     final localAssetsWithoutChecksum = localOnlyAssets.where((asset) => asset.checksum == null).toList();
-    debugPrint("hashing ${localAssetsWithoutChecksum.length} localAssets without checksum");
+    _log.info("hashing ${localAssetsWithoutChecksum.length} localAssets without checksum");
     await _ref.read(manualHashServiceProvider).hashAssets(localAssetsWithoutChecksum);
 
     // Now get the updated localAssets with the checksums just hashed
@@ -63,7 +64,7 @@ class AlbumExtService {
       if (updatedAsset != null) {
         updatedLocalAssets.add(updatedAsset);
       } else {
-        debugPrint("Error: Failed to find updated local asset with checksum");
+        _log.severe("Error: Failed to find updated local asset with checksum");
       }
     }
 
@@ -92,7 +93,7 @@ class AlbumExtService {
   Future<void> createAlbum(String title, Set<BaseAsset> selectedAssets) async {
     final (remoteIds, localOnlyAssets) = splitRemoteLocal(selectedAssets);
 
-    debugPrint(
+    _log.info(
       "Creating album: $title and adding ${remoteIds.length} remote images. Pending ${localOnlyAssets.length} local assets",
     );
 
@@ -109,7 +110,7 @@ class AlbumExtService {
     final added = await _ref.read(remoteAlbumProvider.notifier).addAssets(album.id, remoteIds);
 
     addLocalOnlyAssets(album, localOnlyAssets);
-    debugPrint(
+    _log.info(
       "addToAlbum #selectedAssets=${selectedAssets.length} #remoteIds=${remoteIds.length} #localAssets=${localOnlyAssets.length} #added=$added",
     );
   }

@@ -30,6 +30,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       error: (error, stack) => Scaffold(body: Center(child: Text('Error loading assets: $error'))),
       data: (assets) => SafeArea(
         child: ProviderScope(
+          key: ValueKey(assets.length), // Force timeline recreation when asset count changes
           overrides: [
             multiSelectProvider.overrideWith(
               () => MultiSelectNotifier(

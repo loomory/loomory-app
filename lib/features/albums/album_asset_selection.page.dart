@@ -30,6 +30,7 @@ class AssetSelectionTimelinePage extends HookConsumerWidget {
       error: (error, stack) => Scaffold(body: Center(child: Text('Error loading assets: $error'))),
       data: (assets) => SafeArea(
         child: ProviderScope(
+          key: ValueKey(assets.length), // Force timline recreation when asset count changes
           overrides: [
             multiSelectProvider.overrideWith(
               () => MultiSelectNotifier(

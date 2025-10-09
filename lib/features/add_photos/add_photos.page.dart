@@ -23,6 +23,7 @@ class AddPhotosPage extends ConsumerWidget {
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) => Scaffold(body: Center(child: Text('Error loading assets: $error'))),
       data: (assets) => ProviderScope(
+        key: ValueKey(assets.length), // Force timeline recreation when asset count changes
         overrides: [
           multiSelectProvider.overrideWith(
             () =>
