@@ -11,6 +11,14 @@ docker compose pull && docker compose up -d
 #### After a new loomory clone or pull other devs MUST do
 git submodule update --init --recursive
 
+### Symlinks
+For swift, from the Runner folder do something like:
+ln -s ../../packages/immich/mobile/ios/Runner/BackgroundSync/BackgroundSync
+to add new native dependencies. 
+
+Then in xCode select Add files to project, select the symlink folder and as Action change to Reference file in place.
+
+Android is FFS.
 
 ## Gotchas
 - await ref.read(backgroundSyncProvider).syncLocal(full: true) just crashes with a platform signal error.
