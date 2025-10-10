@@ -6,15 +6,11 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
-// All local assets, this includes the ones also synced to the server
+// Repository provider for local assets, a local asset for Loomory can be:
+// 1. An asset added by the user, meaning it has a remote id and is visible in the timeline
+// 2. An asset that is just available on the device but not added to Loomory.
+// We need this to be able to pick from all possible photos everywhere, not only ones added by the user.
 final localAssetRepository = Provider<LocalAssetsRepository>((ref) => LocalAssetsRepository(ref.watch(driftProvider)));
-
-// All assets
-final allAssetsProvider = FutureProvider<List<BaseAsset>>((ref) async {
-  final repository = ref.watch(localAssetRepository);
-  final localAssets = await repository.getAllLocalAssets();
-  return localAssets.cast<BaseAsset>();
-});
 
 class LocalAssetsRepository extends DriftLocalAssetRepository {
   final Drift _db;

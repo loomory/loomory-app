@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:loomory/design_system/ds_input_field.dart';
 
 import '../../design_system/ds_select_timeline.dart';
-import '../../repositories/local_assets.dart';
+import '../../providers/assets.provider.dart';
 import '../../providers/album_ext.provider.dart';
 
 @RoutePage()

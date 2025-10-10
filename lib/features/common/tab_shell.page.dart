@@ -10,15 +10,12 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
-import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 //import 'package:immich_mobile/routing/router.dart';
 
-import '../../repositories/local_assets.dart';
 import '../../routing/router.dart';
 import '../add_options/add_options_bottom_sheet.dart';
 
@@ -33,19 +30,6 @@ class TabShellPage extends ConsumerStatefulWidget {
 class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   Widget build(BuildContext context) {
-    // TODO: Review this, it should perhaps be somewhere else?
-    // This is what we use to refresh local assets when coming to foreground but maybe the invalidate logic
-    // should be somewhere else, not in the tab_shell?
-    ref.listen<SyncStatusState>(syncStatusProvider, (previous, next) {
-      if (previous?.localSyncStatus != next.localSyncStatus) {
-        if (next.localSyncStatus == SyncStatus.success) {
-          debugPrint("Local sync completed! Invalidating allAssetsProvider to get access to latests assets");
-          ref.invalidate(allAssetsProvider);
-        } else if (next.localSyncStatus == SyncStatus.error) {
-          debugPrint("Local sync failed: ${next.errorMessage}");
-        }
-      }
-    });
     final isScreenLandscape = context.orientation == Orientation.landscape;
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
