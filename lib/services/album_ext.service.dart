@@ -108,7 +108,7 @@ class AlbumExtService {
   Future<void> addToAlbum(RemoteAlbum album, Set<BaseAsset> selectedAssets) async {
     final (remoteIds, localOnlyAssets) = splitRemoteLocal(selectedAssets);
     final added = await _ref.read(remoteAlbumProvider.notifier).addAssets(album.id, remoteIds);
-    // TODO, must do await _ref.read(remoteAlbumProvider.notifier).refresh(); if only remote assets added
+
     addLocalOnlyAssets(album, localOnlyAssets);
     _log.info(
       "addToAlbum #selectedAssets=${selectedAssets.length} #remoteIds=${remoteIds.length} #localAssets=${localOnlyAssets.length} #added=$added",
